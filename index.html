@@ -701,6 +701,14 @@ td.delcell{width:44px;text-align:right}
 .toast{display:flex;align-items:center;gap:12px}
 .toast-undo{background:none;border:1px solid rgba(255,255,255,.6);color:#fff;border-radius:8px;padding:4px 10px;font-weight:700;font-size:13px}
 @media (max-width:600px){table.rt td.delcell{position:absolute;right:0;top:8px;width:auto}table.rt tr{position:relative}table.rt td.delcell::before{display:none}}
+.habn{margin:4px 0 0;font-size:13px;color:var(--muted)}
+.habn b{color:var(--ink);font-variant-numeric:tabular-nums;letter-spacing:.3px}
+.hmeta{gap:4px!important}
+.hmeta .addr.hl{display:inline-block;padding:4px 12px;border-radius:999px;font-weight:700;color:var(--navy);background:color-mix(in srgb,var(--third) 40%,transparent);border:1px solid color-mix(in srgb,var(--gold) 55%,transparent);white-space:normal!important}
+body[data-mode="dark"] .hmeta .addr.hl{color:var(--ink);background:color-mix(in srgb,var(--gold) 30%,transparent)}
+.hrow{margin:0;font-size:13px;color:var(--muted)}
+.hrow b{color:var(--ink)}
+@media (max-width:860px){.hmeta .addr.hl{font-size:12.5px;padding:3px 10px}.hrow,.habn{font-size:12px}}
 @media (prefers-reduced-motion:reduce){.sp-logo,.sp-logo img,.sp-name span,.sp-line,.sp-sub{animation-duration:.01s!important;animation-delay:0s!important}.sp-line{width:180px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -906,6 +914,7 @@ function table(cols,rows,opts={}){
   return `<div class="tw"><table class="rt"><thead><tr>${cols.map(c=>`<th class="${c.n?'n':''}">${c.l}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr${r.act?` class="click" data-act="${r.act}" data-id="${esc(r.id)}" tabindex="0"`:''}>${r.cells.map(cell).join('')}</tr>`).join('')}</tbody>${opts.foot?`<tfoot><tr>${opts.foot.map(cell).join('')}</tr></tfoot>`:''}</table></div>`;
 }
 function datebox(d){return `<div class="datebox"><b>${d.getDate()}</b><small>${d.toLocaleDateString('en-AU',{month:'short'})}</small></div>`}
+function fmtAbn(a){const d=String(a).replace(/\D/g,'');return d.length===11?`${d.slice(0,2)} ${d.slice(2,5)} ${d.slice(5,8)} ${d.slice(8)}`:String(a)}
 function sizeText(land){
   const s=num(land.size);if(!s)return 'Size not set';
   const m2=land.unit==='ha'?s*10000:s, ha=m2/10000;
@@ -921,10 +930,12 @@ function vOverview(c){
     <div class="hhead">${logoSrc(c)?`<img class="clogo" src="${logoSrc(c)}${logoSrc(c).startsWith('data:')?'':'?v=2'}" alt="${esc(c.name)} logo" width="256" height="256">`:''}<div class="htext">
       <h1>${esc(c.name)}</h1>
       <p class="eyebrow">${esc(c.purpose||'Investment company')}</p>
+      ${c.abn?`<p class="habn">ABN: <b>${esc(fmtAbn(c.abn))}</b></p>`:''}
     </div></div>
     <div class="hmeta">
-      <p class="addr">${land.address?esc(land.address):c.regAddress?esc(c.regAddress):'<span class="muted">Add the land address in Settings</span>'}</p>
-      <div class="chips"><span class="chip gold">${sizeText(land)}</span>${land.lot?`<span class="chip">${esc(land.lot)}</span>`:''}${land.settlementDate?`<span class="chip">Settled ${fd(land.settlementDate)}</span>`:''}${c.abn?`<span class="chip">ABN ${esc(c.abn)}</span>`:''}</div>
+      <p class="addr hl">${land.address?esc(land.address):c.regAddress?esc(c.regAddress):'Add the land address in Settings'}</p>
+      <p class="hrow">${num(land.size)?sizeText(land):'Land size not set'}</p>
+      <p class="hrow">Settled On: <b>${land.settlementDate?fd(land.settlementDate):'—'}</b></p>
     </div>
   </section>
   <div class="subwrap" data-ov="${ovTab}"><div class="subtabs" role="tablist" aria-label="Home views">
