@@ -678,6 +678,29 @@ body[data-mode="dark"] .setlabel.big{color:var(--ink)}
 @keyframes spLine{to{width:180px}}
 @keyframes spFade{to{opacity:1}}
 @media (max-width:600px){.sp-logo{width:170px;height:170px}.sp-name{font-size:32px}}
+/* sign-in page in the app theme */
+.gate{background:radial-gradient(60rem 40rem at 30% 15%,#1de1c8 0%,transparent 55%),radial-gradient(50rem 40rem at 80% 90%,#1a5fd0 0%,transparent 60%),#0b1b3a!important}
+.gatecard{background:rgba(255,255,255,.10)!important;border:1px solid rgba(255,255,255,.28)!important;-webkit-backdrop-filter:blur(18px) saturate(160%);backdrop-filter:blur(18px) saturate(160%);box-shadow:0 30px 80px rgba(0,0,0,.35);padding:36px 28px!important;gap:12px!important}
+.gatecard h1{color:#fff!important;font:700 30px/1 "IBM Plex Sans",system-ui,sans-serif!important;letter-spacing:5px}
+.gatesub{color:rgba(255,255,255,.8);font-size:13px;letter-spacing:2px;text-transform:uppercase;font-weight:600}
+#gatemsg{color:rgba(255,255,255,.85)!important}
+.gbtn-wrap{padding:5px;border-radius:999px;background:linear-gradient(90deg,#1de1c8,#1a8cff);box-shadow:0 10px 30px rgba(26,140,255,.35);margin-top:8px;min-height:50px;display:grid;place-items:center}
+.gbtn-wrap:empty,.gbtn-wrap #gbtn:empty{min-width:280px}
+.gbtn-wrap #gbtn{border-radius:999px;overflow:hidden;line-height:0}
+/* undo + delete */
+.undo-btn{display:flex;gap:10px;align-items:center;background:color-mix(in srgb,#fff 10%,transparent);border:1px solid color-mix(in srgb,#fff 22%,transparent);color:#e6ecf5;border-radius:10px;padding:9px 12px;font-weight:600;margin-top:auto}
+.undo-btn + .gear{margin-top:8px}
+.undo-btn svg,.delbtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.undo-btn:disabled{opacity:.45;cursor:default}
+.undo-btn.icon{margin:0;padding:8px;background:color-mix(in srgb,var(--glass) 40%,transparent);border-color:color-mix(in srgb,#fff 70%,transparent);color:var(--navy)}
+body[data-mode="dark"] .undo-btn.icon{color:var(--ink)}
+.topacts{display:flex;gap:8px}
+td.delcell{width:44px;text-align:right}
+.delbtn{background:none;border:1px solid transparent;border-radius:8px;padding:5px;color:var(--muted);line-height:0}
+.delbtn:hover{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 40%,transparent);background:color-mix(in srgb,var(--bad) 8%,transparent)}
+.toast{display:flex;align-items:center;gap:12px}
+.toast-undo{background:none;border:1px solid rgba(255,255,255,.6);color:#fff;border-radius:8px;padding:4px 10px;font-weight:700;font-size:13px}
+@media (max-width:600px){table.rt td.delcell{position:absolute;right:0;top:8px;width:auto}table.rt tr{position:relative}table.rt td.delcell::before{display:none}}
 @media (prefers-reduced-motion:reduce){.sp-logo,.sp-logo img,.sp-name span,.sp-line,.sp-sub{animation-duration:.01s!important;animation-delay:0s!important}.sp-line{width:180px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -687,12 +710,14 @@ body[data-mode="dark"] .setlabel.big{color:var(--ink)}
   <aside class="side" aria-label="Sections">
     <div class="brand"><div class="mark"><img src="bkwik-logo.png" alt=""></div><div><b>B KWIK</b><small>Admin</small></div></div>
     <nav class="nav" id="sidenav"></nav>
+    <button class="undo-btn" data-act="undo" aria-label="Undo last change" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg><span>Undo</span></button>
     <button class="gear" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></button>
   </aside>
   <main>
     <div class="mtop">
       <div class="brand"><div class="mark"><img src="bkwik-logo.png" alt=""></div><div><b>B KWIK</b><small>Admin</small></div></div>
-      <button class="gear icon" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+      <div class="topacts"><button class="undo-btn icon" data-act="undo" aria-label="Undo last change" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+      <button class="gear icon" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
     </div>
     <div class="ctabs" role="tablist" aria-label="Companies" id="ctabs"></div>
     <div class="view" id="view"><p class="loading">Loading your companies…</p></div>
@@ -708,7 +733,7 @@ body[data-mode="dark"] .setlabel.big{color:var(--ink)}
     <p class="sp-sub">B IN DALBY &middot; KWIK TRIP</p>
   </div>
 </div>
-<div id="gate" class="gate" hidden><div class="gatecard"><img class="gatelogo" src="bkwik-logo.png" alt="B KWIK logo" width="120" height="120"><h1>B KWIK</h1><p class="muted">Admin sign-in</p><div id="gbtn"></div><p id="gatemsg" class="small muted"></p></div></div>
+<div id="gate" class="gate" hidden><div class="gatecard"><img class="gatelogo" src="bkwik-logo.png" alt="B KWIK logo" width="120" height="120"><h1>B KWIK</h1><p class="gatesub">Admin sign-in</p><div class="gbtn-wrap"><div id="gbtn"></div></div><p id="gatemsg" class="small muted"></p></div></div>
 <div id="modal" hidden></div>
 <div class="toast" id="toast" hidden role="status"></div>
 
@@ -872,9 +897,12 @@ const personName=(c,id)=>{const p=c.shareholders.find(x=>x.id===id);return p?p.n
 /* ---------- small renderers ---------- */
 const kpi=(l,v,s='',extra='')=>`<div class="kpi"><span class="l">${l}</span><span class="v">${v}</span>${s?`<span class="s">${s}</span>`:''}${extra}</div>`;
 const bar=(a,b)=>{const p=b>0?Math.max(0,Math.min(100,a/b*100)):0;return `<div class="bar" aria-hidden="true"><i style="width:${p}%"></i></div>`};
+const DEL_KIND={'edit-contrib':'contributions','edit-payment':'payments','edit-expense':'expenses','edit-rate':'rates','view-message':'messages'};
 function table(cols,rows,opts={}){
   if(!rows.length)return `<div class="empty">${opts.empty||'Nothing recorded yet.'}</div>`;
-  const cell=(v,i)=>`<td data-label="${esc(cols[i].l)}" class="${cols[i].n?'n':''}${cols[i].full?' full':''}">${v}</td>`;
+  const canDel=rows.some(r=>r.act&&DEL_KIND[r.act]);
+  if(canDel){cols=[...cols,{l:'',del:1}];rows=rows.map(r=>({...r,cells:[...r.cells,r.act&&DEL_KIND[r.act]?`<button class="delbtn" data-act="del" data-kind="${DEL_KIND[r.act]}" data-id="${esc(r.id)}" aria-label="Delete" title="Delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg></button>`:'']}));if(opts.foot)opts={...opts,foot:[...opts.foot,'']}}
+  const cell=(v,i)=>`<td data-label="${esc(cols[i].l)}" class="${cols[i].n?'n':''}${cols[i].full?' full':''}${cols[i].del?' delcell':''}">${v}</td>`;
   return `<div class="tw"><table class="rt"><thead><tr>${cols.map(c=>`<th class="${c.n?'n':''}">${c.l}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr${r.act?` class="click" data-act="${r.act}" data-id="${esc(r.id)}" tabindex="0"`:''}>${r.cells.map(cell).join('')}</tr>`).join('')}</tbody>${opts.foot?`<tfoot><tr>${opts.foot.map(cell).join('')}</tr></tfoot>`:''}</table></div>`;
 }
 function datebox(d){return `<div class="datebox"><b>${d.getDate()}</b><small>${d.toLocaleDateString('en-AU',{month:'short'})}</small></div>`}
@@ -1413,7 +1441,15 @@ applyMode();
 
 /* ---------- toast / modal ---------- */
 let toastT;
-function toast(msg){const t=$('#toast');t.textContent=msg;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,3200)}
+function toast(msg,withUndo){const t=$('#toast');t.innerHTML=esc(msg)+(withUndo&&undoStack.length?' <button type="button" class="toast-undo" data-act="undo">Undo</button>':'');t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,withUndo?6000:3200)}
+let undoStack=[],shadow={};
+function snapAll(){COMPANIES.forEach(co=>shadow[co.id]=JSON.stringify(state[co.id]))}
+function trackChange(){const id=cur,now=JSON.stringify(state[id]);if(shadow[id]!=null&&shadow[id]!==now){undoStack.push({id,data:shadow[id]});if(undoStack.length>30)undoStack.shift()}shadow[id]=now;updUndo()}
+function updUndo(){document.querySelectorAll('.undo-btn').forEach(b=>{b.disabled=!undoStack.length;b.title=undoStack.length?'Undo last change':'Nothing to undo'})}
+function undo(){const u=undoStack.pop();if(!u){toast('Nothing to undo');return}
+  const co=COMPANIES.find(x=>x.id===u.id);state[u.id]=normalize(JSON.parse(u.data),co);shadow[u.id]=JSON.stringify(state[u.id]);
+  if(cur!==u.id)cur=u.id;closeModal();navStack=[];render();updUndo();if(db)queueSave(u.id);toast('Change undone')}
+function delItem(kind,id){const c=C();const arr=kind==='rates'?c.loan.rates:c[kind];if(!arr)return;const i=arr.findIndex(x=>x.id===id);if(i<0)return;arr.splice(i,1);commit();toast('Deleted',true)}
 function closeModal(){$('#modal').hidden=true;$('#modal').innerHTML='';document.body.classList.remove('locked')}
 function fieldHtml(fl){
   const id='f_'+fl.id,v=fl.value??'';
@@ -1447,8 +1483,8 @@ function openForm(cfg){
   $('#modal').hidden=false;document.body.classList.add('locked');
   const form=$('#form');
   form.onsubmit=e=>{e.preventDefault();const {vals,err}=readForm(form,cfg.fields);if(err){$('#ferr').textContent=err;return}
-    const r=cfg.onSave(vals);if(typeof r==='string'){$('#ferr').textContent=r;return}closeModal();commit();if(cfg.done)toast(cfg.done);goBack()};
-  if(cfg.onDelete){const b=$('#fdel');b.onclick=()=>{if(b.dataset.arm){cfg.onDelete();closeModal();commit();toast('Deleted');goBack()}else{b.dataset.arm='1';b.textContent='Tap again to delete'}}}
+    const r=cfg.onSave(vals);if(typeof r==='string'){$('#ferr').textContent=r;return}closeModal();commit();if(cfg.done)toast(cfg.done,true);goBack()};
+  if(cfg.onDelete){const b=$('#fdel');b.onclick=()=>{if(true){cfg.onDelete();closeModal();commit();toast('Deleted',true);goBack()}else{b.dataset.arm='1';b.textContent='Tap again to delete'}}}
   if(cfg.extraBtn){$('#fextra').onclick=()=>cfg.extraBtn.onClick(form)}
   if(cfg.fields.some(f=>f.showIf)){const ap=()=>{const {vals}=readForm(form,cfg.fields);cfg.fields.forEach(f=>{if(f.showIf){const w=form.querySelector('#w_'+f.id);if(w)w.hidden=!f.showIf(vals)}})};form.addEventListener('input',ap);form.addEventListener('change',ap);ap()}
   if(cfg.onInput){form.addEventListener('input',()=>cfg.onInput(form));form.addEventListener('change',()=>cfg.onInput(form));cfg.onInput(form)}
@@ -1827,7 +1863,7 @@ function openStageList(){const c=C();listModal('Construction stages',c.stages.ma
 
 /* ---------- events ---------- */
 const ACTIONS={
-  'close':()=>{closeModal();goBack()},'signout':signOut,
+  'close':()=>{closeModal();goBack()},'undo':undo,'del':d=>delItem(d.kind,d.id),'signout':signOut,
   'rep-email':d=>emailReport([{to:d.to,name:d.who}]),
   'rep-email-all':()=>emailReport(rRecipients().filter(p=>p.email).map(p=>({to:p.email,name:p.name}))),'subtab':d=>{if(d.key==='mortgage')mTab=d.tab;else if(d.key==='outgoings')oTab=d.tab;render()},'add-person':()=>formPerson(),
   'set-setup':()=>child(openSettings,formSetup),'set-company':()=>child(openSettings,formCompany),'set-land':()=>child(openSettings,formLand),'set-loan':()=>child(openSettings,formLoan),
@@ -1857,7 +1893,7 @@ window.addEventListener('hashchange',()=>{readHash();render()});
 /* ---------- saving ---------- */
 let statusText='Connecting…';
 function setStatus(kind,text){document.body.dataset.sync=kind;statusText=text;const g=$('#gstat');if(g)g.textContent=text;document.querySelectorAll('.gear').forEach(b=>b.title='Settings · '+text)}
-function commit(){render();if(!db){toast('Not saved: sign in to keep changes');return}queueSave(cur)}
+function commit(){trackChange();render();if(!db){toast('Not saved: sign in to keep changes');return}queueSave(cur)}
 function queueSave(id){clearTimeout(saveTimers[id]);setStatus('busy','Saving…');saveTimers[id]=setTimeout(()=>doSave(id),400)}
 const CFG=window.PBK_CONFIG||{};
 let authToken=null,authEmail='',versions={};
@@ -1881,7 +1917,7 @@ function signIn(silent){
         callback:resp=>{authToken=resp.credential;authEmail=tokenEmail(authToken);try{localStorage.setItem('pbk-token',authToken)}catch(e){}
           $('#gate').hidden=true;signInWait=null;resolve()}});
       showGate(silent?'':'Please sign in again to continue.');
-      google.accounts.id.renderButton($('#gbtn'),{theme:'outline',size:'large',shape:'pill',text:'signin_with',width:260});
+      google.accounts.id.renderButton($('#gbtn'),{theme:'filled_blue',size:'large',shape:'pill',text:'signin_with',logo_alignment:'left',width:280});
       google.accounts.id.prompt();
     };start();
   });
@@ -1894,12 +1930,12 @@ async function doSave(id){
   try{
     const res=await api('save',{id,data:JSON.parse(JSON.stringify(state[id])),version:versions[id]||0});
     if(res.ok){versions[id]=res.version;setStatus('ok','All changes saved')}
-    else if(res.conflict){versions[id]=res.version;state[id]=normalize(res.data,COMPANIES.find(x=>x.id===id));render();setStatus('ok','Updated from the server');toast('This company was changed elsewhere (or a reminder was sent). The latest figures are now showing. Please redo your last change.')}
+    else if(res.conflict){versions[id]=res.version;state[id]=normalize(res.data,COMPANIES.find(x=>x.id===id));shadow[id]=JSON.stringify(state[id]);render();setStatus('ok','Updated from the server');toast('This company was changed elsewhere (or a reminder was sent). The latest figures are now showing. Please redo your last change.')}
     else{setStatus('off','Not saved');toast('Could not save: '+(res.error||'try again'))}
   }catch(e){setStatus('off','Not saved');toast('Could not save. Check your internet connection.')}
   finally{writing[id]=false;if(pending[id]){pending[id]=false;doSave(id)}}
 }
-async function reloadAll(){
+async function reloadAll(){setTimeout(snapAll,0);
   const res=await api('load',{});
   if(!res.ok)throw new Error(res.error||'Could not load');
   COMPANIES.forEach(co=>{const x=res.companies[co.id];if(x&&x.data){state[co.id]=normalize(x.data,co);versions[co.id]=x.version}else{versions[co.id]=0}});
@@ -1914,7 +1950,7 @@ function hideSplash(){const sp=$('#splash');if(sp){sp.classList.add('out');setTi
   db=true;setStatus('busy','Loading…');
   try{await Promise.all([reloadAll(),splashDone]);hideSplash();setStatus('ok','All changes saved')}
   catch(e){hideSplash();setStatus('off','Could not load saved data');toast('Could not load your data: '+e.message)}
-  finally{loaded=true;render()}
+  finally{loaded=true;snapAll();render()}
   document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&!Object.values(writing).some(Boolean)&&$('#modal').hidden){try{await reloadAll();render()}catch(e){}}});
   if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js')}catch(e){}}
 })();
