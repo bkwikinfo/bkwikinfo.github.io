@@ -866,6 +866,27 @@ body[data-mode="dark"] .fab{background:radial-gradient(120% 120% at 30% 20%,colo
   box-shadow:0 6px 18px rgba(0,0,0,.4),inset 0 0 0 1px color-mix(in srgb,#fff 18%,transparent),inset 0 -8px 14px color-mix(in srgb,var(--third) 14%,transparent)!important}
 body[data-mode="dark"] .fab::before{background:linear-gradient(180deg,color-mix(in srgb,#fff 32%,transparent),transparent)}
 body[data-mode="dark"] .fab svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
+/* welcome greeting */
+.greet{display:flex;align-items:center;gap:10px;padding:2px 4px 10px;min-height:30px}
+.greet .gi{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;color:var(--gold);
+  background:color-mix(in srgb,var(--glass) 55%,transparent);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 60%,transparent)}
+.greet .gi svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.greet .gt{font-size:16px;color:var(--ink);opacity:.9}
+.greet .gt b{font-family:Georgia,"Times New Roman",serif;font-size:21px;font-weight:600;color:var(--navy);margin-right:2px}
+.greet .gd{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
+body[data-mode="dark"] .greet .gt b{color:var(--third)}
+body[data-mode="dark"] .greet .gi{color:var(--third);border-color:color-mix(in srgb,var(--third) 40%,transparent)}
+@media (max-width:860px){.greet{padding:0 2px 8px;gap:8px;min-height:24px}.greet .gi{width:24px;height:24px}.greet .gi svg{width:14px;height:14px}
+  .greet .gt{font-size:13px}.greet .gt b{font-size:16px}.greet .gd{display:none}}
+body:has(#splash) .greet .gt{opacity:0}
+.greet .gt,.greet .gi{animation:spFade .7s ease-out both}
+/* splash: logos only, bigger */
+.sp-logo{width:320px;height:320px}
+.sp-cos{gap:30px;margin-top:22px;animation-delay:1.25s}
+.sp-cos img{width:118px;height:118px;animation-delay:1.25s}
+.sp-cos img:last-child{animation-delay:1.45s}
+.sp-sep{height:72px}
+@media (max-width:600px){.sp-logo{width:240px;height:240px}.sp-cos{gap:22px}.sp-cos img{width:88px;height:88px}.sp-sep{height:56px}}
 @media (prefers-reduced-motion:reduce){.view.enter > *{animation:none}.sk{animation:none}}
 @media (prefers-reduced-motion:reduce){.sp-logo,.sp-logo img,.sp-name span,.sp-line,.sp-sub{animation-duration:.01s!important;animation-delay:0s!important}.sp-line{width:180px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -888,6 +909,7 @@ body[data-mode="dark"] .fab svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
       <div class="topacts"><button class="undo-btn icon srch" data-act="search" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><button class="undo-btn icon" data-act="undo" aria-label="Undo last change" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
       <button class="gear icon" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
     </div>
+    <div class="greet" id="greet" aria-live="polite"></div>
     <div class="ctabs" role="tablist" aria-label="Companies" id="ctabs"></div>
     <div class="view" id="view"><p class="loading">Loading your companies…</p></div>
   </main>
@@ -897,10 +919,7 @@ body[data-mode="dark"] .fab svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
 <div id="splash" class="splash" aria-label="B KWIK">
   <div class="splash-in">
     <div class="sp-logo"><img src="bkwik-logo.png" alt="" width="200" height="200"><span class="sp-shine"></span></div>
-    <div class="sp-name"><span>B</span><span class="sp-gap"></span><span>K</span><span>W</span><span>I</span><span>K</span></div>
-    <div class="sp-line"></div>
-    <p class="sp-sub">B IN DALBY &middot; KWIK TRIP</p>
-    <div class="sp-cos"><img src="logo-dalby-dark.png" alt="" width="64" height="64"><span class="sp-sep"></span><img src="logo-kwik.png" alt="" width="64" height="64"></div>
+    <div class="sp-cos"><img src="logo-dalby-dark.png" alt="" width="120" height="120"><span class="sp-sep"></span><img src="logo-kwik.png" alt="" width="120" height="120"></div>
   </div>
 </div>
 <div id="gate" class="gate" hidden><div class="gatecard"><img class="gatelogo" src="bkwik-logo.png" alt="B KWIK logo" width="120" height="120"><h1>B KWIK</h1><p class="gatesub">Admin sign-in</p><div class="gbtn-wrap"><div id="gbtn"></div></div><p id="gatemsg" class="small muted"></p></div></div>
@@ -1330,7 +1349,7 @@ function vOutgoings(c){
     const list=[...U].filter(e=>utilFilter==='all'||(e.utility||e.category)===utilFilter).sort(byDate).reverse();
     const by={};U.forEach(e=>{const k=e.utility||e.category;by[k]=by[k]||{n:0,t:0,last:''};by[k].n++;by[k].t+=num(e.amount);if((e.date||'')>by[k].last)by[k].last=e.date});
     const last=[...U].sort(byDate).pop();
-    actions=`<button class="btn gold" data-act="add-utility">Add utility payment</button>`;
+    actions='';
     body=`<div class="kpis">
       ${kpi('Utilities paid',m0(sum(U,e=>e.amount)),`${U.length} payments`)}
       ${kpi('This financial year',m0(sum(U.filter(e=>e.date>=fyR[0]&&e.date<=fyR[1]),e=>e.amount)),fyLabel(fy))}
@@ -1344,14 +1363,14 @@ function vOutgoings(c){
       <select id="ufilter" aria-label="Filter by utility" style="width:auto"><option value="all">All utilities</option>${types.map(t=>`<option value="${esc(t)}"${utilFilter===t?' selected':''}>${esc(t)}</option>`).join('')}</select></header>
       ${table([{l:'Date paid'},{l:'Utility'},{l:'Provider'},{l:'Invoice / bill no.'},{l:'Amount paid',n:1},{l:'Per share',n:1}],
         list.map(e=>({act:'edit-expense',id:e.id,cells:[fd(e.date),`<span class="icl">${utilIcon(e.utility||e.category)}<b>${esc(e.utility||e.category)}</b></span>`,esc(e.provider||'—'),esc(e.invoice||'—'),m2(e.amount),m2(num(e.amount)/4)]})),
-        {empty:emptyState('drop','No utility payments yet','Pick a utility, then add the bill number, amount and date paid.','<button class="btn gold" data-act="add-utility">Add utility payment</button>'),foot:list.length?['Total','','','',m2(sum(list,e=>e.amount)),m2(sum(list,e=>e.amount)/4)]:null})}
+        {empty:emptyState('drop','No utility payments yet','Tap + and choose Utility payment to add the bill number, amount and date paid.',''),foot:list.length?['Total','','','',m2(sum(list,e=>e.amount)),m2(sum(list,e=>e.amount)/4)]:null})}
     </section>`;
   }else{
     const W=c.expenses.filter(e=>e.kind!=='utility');
     const spent=id=>sum(W.filter(e=>e.stageId===id),e=>e.amount);
     const budget=sum(c.stages,s=>s.budget),cspent=sum(c.stages,s=>spent(s.id));
     const statusChip=s=>({'Done':'good','In progress':'warn','On hold':'bad','Approved':'gold'}[s]||'');
-    actions=`<button class="btn" data-act="add-stage">Add stage</button><button class="btn gold" data-act="add-work">Add project cost</button>`;
+    actions='';
     body=`<div class="kpis">
       ${kpi('Project costs to date',m0(sum(W,e=>e.amount)),`${W.length} items`)}
       ${kpi('Construction budget',m0(budget),`${c.stages.length} stages`)}
@@ -1364,12 +1383,12 @@ function vOutgoings(c){
         <div class="row"><span class="muted">Budget</span><span>${m0(s.budget)}</span></div>
         <div class="row"><span class="muted">Spent</span><span>${m0(sp)}</span></div>
         ${bar(sp,num(s.budget))}
-        <div class="row muted"><span>${s.start?fd(s.start):'Start not set'}</span><span>${s.end?fd(s.end):''}</span></div></button>`}).join('')}</div>`:emptyState('hammer','No construction stages yet','Add stages like site works, supermarket build and fuel station with a budget for each.','<button class="btn" data-act="add-stage">Add stage</button>')}
+        <div class="row muted"><span>${s.start?fd(s.start):'Start not set'}</span><span>${s.end?fd(s.end):''}</span></div></button>`}).join('')}</div>`:emptyState('hammer','No construction stages yet','Tap + and choose Construction stage to add site works, supermarket build and fuel station with a budget for each.','')}
     </section>
     <section class="card"><header class="ch"><h2>Project costs</h2></header>
       ${table([{l:'Date'},{l:'Item',full:1},{l:'Category'},{l:'Stage'},{l:'Invoice no.'},{l:'Amount',n:1},{l:'Per share',n:1}],
         [...W].sort(byDate).reverse().map(e=>{const st=c.stages.find(s=>s.id===e.stageId);return {act:'edit-expense',id:e.id,cells:[fd(e.date),`<b>${esc(e.description)}</b>${e.paidBy?`<br><span class="muted small">Paid by ${esc(e.paidBy)}</span>`:''}`,esc(e.category),st?esc(st.name):'<span class="muted">—</span>',esc(e.invoice||'—'),m2(e.amount),m2(num(e.amount)*.25)]}}),
-        {empty:emptyState('hammer','No project costs yet','Add stamp duty, approvals, construction invoices and other project costs here.','<button class="btn gold" data-act="add-work">Add project cost</button>')})}
+        {empty:emptyState('hammer','No project costs yet','Tap + and choose Project cost to add stamp duty, approvals, construction invoices and other costs.','')})}
     </section>`;
   }
   return `
@@ -1601,7 +1620,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.08.10';
+const APP_VERSION='2026.11.08.11';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -1742,10 +1761,19 @@ function openDownload(){
 
 /* ---------- shell ---------- */
 function renderShell(){
+  renderGreet();
   $('#ctabs').innerHTML=COMPANIES.map(co=>{const c=state[co.id];return `<button class="ctab" role="tab" aria-selected="${co.id===cur}" data-co="${co.id}"><b>${esc(c.name)}</b></button>`}).join('');
   const nav=SECTIONS.map(s=>`<button data-go="${s.id}"${s.id===sec?' aria-current="page"':''}><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[s.id]}</svg><span>${s.label}</span></button>`).join('');
   $('#sidenav').innerHTML=nav;$('#bnav').innerHTML=nav;
 }
+function greetInfo(){const h=new Date().getHours();
+  return h<5?{t:'Good evening',ic:'moon'}:h<12?{t:'Good morning',ic:'sun'}:h<17?{t:'Good afternoon',ic:'sun'}:{t:'Good evening',ic:'moon'}}
+function renderGreet(){const g=$('#greet');if(!g)return;const {t,ic}=greetInfo();
+  const svg=ic==='sun'?'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>':'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
+  const day=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
+  const html=`<span class="gi"><svg viewBox="0 0 24 24" aria-hidden="true">${svg}</svg></span><span class="gt"><b>${t}</b> and welcome to B KWIK</span><span class="gd">${day}</span>`;
+  if(g.innerHTML!==html)g.innerHTML=html}
+setInterval(renderGreet,60000);
 function render(){
   document.body.dataset.co=cur;document.body.dataset.sec=sec;
   {const src=logoSrc(C()),bl=$('#bglogo');bl.style.backgroundImage=src?`url("${src}${src.startsWith('data:')?'':'?v=3'}")`:'none'}
@@ -2403,7 +2431,7 @@ setInterval(checkAppVersion,120000);window.addEventListener('focus',checkAppVers
 setTimeout(()=>{Object.values(LETTERHEAD).forEach(L=>{imgData(L.first+'?v='+APP_VERSION).catch(()=>{});imgData(L.next+'?v='+APP_VERSION).catch(()=>{})})},6000);
 window.addEventListener('focus',()=>pullUpdates());
 window.addEventListener('online',()=>{COMPANIES.forEach(co=>{if(readUnsynced()[co.id])queueSave(co.id)});setTimeout(pullUpdates,1500)});
-const splashDone=new Promise(res=>setTimeout(res,matchMedia('(prefers-reduced-motion: reduce)').matches?600:3700));
+const splashDone=new Promise(res=>setTimeout(res,matchMedia('(prefers-reduced-motion: reduce)').matches?600:3200));
 function hideSplash(){const sp=$('#splash');if(sp){sp.classList.add('out');setTimeout(()=>sp.remove(),700)}}
 (async function init(){
   readHash();render();
