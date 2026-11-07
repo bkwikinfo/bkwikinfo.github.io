@@ -701,6 +701,7 @@ td.delcell{width:44px;text-align:right}
 .toast{display:flex;align-items:center;gap:12px}
 .toast-undo{background:none;border:1px solid rgba(255,255,255,.6);color:#fff;border-radius:8px;padding:4px 10px;font-weight:700;font-size:13px}
 @media (max-width:600px){table.rt td.delcell{position:absolute;right:0;top:8px;width:auto}table.rt tr{position:relative}table.rt td.delcell::before{display:none}}
+body[data-mode="dark"][data-co="dalby"] .clogo{filter:brightness(1.9) saturate(1.1) drop-shadow(0 0 6px rgba(142,207,220,.45))}
 @media (prefers-reduced-motion:reduce){.sp-logo,.sp-logo img,.sp-name span,.sp-line,.sp-sub{animation-duration:.01s!important;animation-delay:0s!important}.sp-line{width:180px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -918,7 +919,7 @@ function vOverview(c){
   const T=totals(c),L=T.loan,due=dueInfo(c),land=c.land;
   return `
   <section class="card hero">
-    <div class="hhead">${logoSrc(c)?`<img class="clogo" src="${logoSrc(c)}" alt="${esc(c.name)} logo" width="256" height="256">`:''}<div class="htext">
+    <div class="hhead">${logoSrc(c)?`<img class="clogo" src="${logoSrc(c)}${logoSrc(c).startsWith('data:')?'':'?v=2'}" alt="${esc(c.name)} logo" width="256" height="256">`:''}<div class="htext">
       <h1>${esc(c.name)}</h1>
       <p class="eyebrow">${esc(c.purpose||'Investment company')}</p>
     </div></div>
@@ -1418,7 +1419,7 @@ function renderShell(){
 }
 function render(){
   document.body.dataset.co=cur;document.body.dataset.sec=sec;
-  {const src=logoSrc(C()),bl=$('#bglogo');bl.style.backgroundImage=src?`url("${src}")`:'none'}
+  {const src=logoSrc(C()),bl=$('#bglogo');bl.style.backgroundImage=src?`url("${src}${src.startsWith('data:')?'':'?v=2'}")`:'none'}
   renderShell();
   const c=C();
   const v={overview:vOverview,holders:vHolders,mortgage:vMortgage,outgoings:vOutgoings,reports:vReports}[sec]||vOverview;
