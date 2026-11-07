@@ -709,6 +709,12 @@ body[data-mode="dark"] .hmeta .addr.hl{color:var(--ink);background:color-mix(in 
 .hrow{margin:0;font-size:13px;color:var(--muted)}
 .hrow b{color:var(--ink)}
 @media (max-width:860px){.hmeta .addr.hl{font-size:12.5px;padding:3px 10px}.hrow,.habn{font-size:12px}}
+/* undo + settings: one row, icon only, larger */
+.sideacts{margin-top:auto;display:flex;gap:10px;padding:0 4px}
+.sideacts .undo-btn,.sideacts .gear{margin:0!important;width:56px;height:56px;padding:0;justify-content:center;border-radius:14px}
+.sideacts .undo-btn svg,.sideacts .gear svg{width:28px;height:28px}
+.topacts .undo-btn.icon,.topacts .gear.icon{width:46px;height:46px;padding:0;display:grid;place-items:center;border-radius:13px}
+.topacts .undo-btn.icon svg,.topacts .gear.icon svg{width:26px;height:26px}
 @media (prefers-reduced-motion:reduce){.sp-logo,.sp-logo img,.sp-name span,.sp-line,.sp-sub{animation-duration:.01s!important;animation-delay:0s!important}.sp-line{width:180px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -718,8 +724,10 @@ body[data-mode="dark"] .hmeta .addr.hl{color:var(--ink);background:color-mix(in 
   <aside class="side" aria-label="Sections">
     <div class="brand"><div class="mark"><img src="bkwik-logo.png" alt=""></div><div><b>B KWIK</b><small>Admin</small></div></div>
     <nav class="nav" id="sidenav"></nav>
-    <button class="undo-btn" data-act="undo" aria-label="Undo last change" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg><span>Undo</span></button>
-    <button class="gear" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>Settings</span></button>
+    <div class="sideacts">
+    <button class="undo-btn" data-act="undo" aria-label="Undo last change" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+    <button class="gear" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
+    </div>
   </aside>
   <main>
     <div class="mtop">
@@ -1012,7 +1020,7 @@ function vHolders(c){
   const list=[...c.contributions].sort(byDate).reverse().filter(x=>personFilter==='all'||shareOf(c,x)===Number(personFilter));
   return `
   <div class="pagehead"><div><h1>Shareholders</h1></div>
-    <div class="actions"><button class="btn" data-act="add-person">Add person</button><button class="btn gold" data-act="add-contrib">Record payment</button></div></div>
+    <div class="actions"><button class="btn gold" data-act="add-contrib">Record payment</button></div></div>
   <div class="vscroll">
   <div class="v-overview sharehost"><div class="shares">${[1,2,3,4].map(n=>shareCard(c,n)).join('')}</div></div>
   <section class="card"><header class="ch"><h2>Paid in by share</h2></header>
