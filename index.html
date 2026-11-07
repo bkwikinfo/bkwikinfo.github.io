@@ -866,20 +866,25 @@ body[data-mode="dark"] .fab{background:radial-gradient(120% 120% at 30% 20%,colo
   box-shadow:0 6px 18px rgba(0,0,0,.4),inset 0 0 0 1px color-mix(in srgb,#fff 18%,transparent),inset 0 -8px 14px color-mix(in srgb,var(--third) 14%,transparent)!important}
 body[data-mode="dark"] .fab::before{background:linear-gradient(180deg,color-mix(in srgb,#fff 32%,transparent),transparent)}
 body[data-mode="dark"] .fab svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
-/* welcome greeting */
-.greet{display:flex;align-items:center;gap:10px;padding:2px 4px 10px;min-height:30px}
-.greet .gi{width:30px;height:30px;flex:none;border-radius:50%;display:grid;place-items:center;color:var(--gold);
-  background:color-mix(in srgb,var(--glass) 55%,transparent);border:1px solid color-mix(in srgb,var(--gold) 35%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 60%,transparent)}
-.greet .gi svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.greet .gt{font-size:16px;color:var(--ink);opacity:.9}
-.greet .gt b{font-family:Georgia,"Times New Roman",serif;font-size:21px;font-weight:600;color:var(--navy);margin-right:2px}
-.greet .gd{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
-body[data-mode="dark"] .greet .gt b{color:var(--third)}
-body[data-mode="dark"] .greet .gi{color:var(--third);border-color:color-mix(in srgb,var(--third) 40%,transparent)}
-@media (max-width:860px){.greet{padding:0 2px 8px;gap:8px;min-height:24px}.greet .gi{width:24px;height:24px}.greet .gi svg{width:14px;height:14px}
-  .greet .gt{font-size:13px}.greet .gt b{font-size:16px}.greet .gd{display:none}}
-body:has(#splash) .greet .gt{opacity:0}
-.greet .gt,.greet .gi{animation:spFade .7s ease-out both}
+/* day, date and time above the icons */
+.clock{display:flex;flex-direction:column;line-height:1.15;font-variant-numeric:tabular-nums}
+.clock .ct{font-weight:700;color:var(--navy);letter-spacing:.3px}
+.clock .cdl{color:var(--muted);font-size:12px}
+.clock .cds{display:none}
+.side-clock{margin-top:auto;padding:0 8px 10px}
+.side-clock .ct{font-size:24px}
+.side-clock .cdl{font-size:13px;margin-top:2px}
+.sideacts{margin-top:0!important}
+.topright{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.topright .clock{flex-direction:row;align-items:baseline;gap:6px;padding-right:2px}
+.topright .clock .ct{font-size:13px}.topright .clock .cdl{font-size:11.5px}
+.topright .clock .cdw{display:none}.topright .clock .cds{display:inline}
+body[data-mode="dark"] .clock .ct{color:var(--third)}
+/* splash welcome */
+.sp-hello{margin-top:26px;text-align:center;color:#fff;opacity:0;animation:spFade .8s ease-out 1.7s both;display:flex;flex-direction:column;align-items:center;gap:6px}
+.sp-hello b{font:600 34px/1.1 Georgia,"Times New Roman",serif;letter-spacing:.5px;text-shadow:0 4px 18px rgba(0,0,0,.35)}
+.sp-hello span{font:500 15px "IBM Plex Sans",system-ui,sans-serif;letter-spacing:2px;color:rgba(255,255,255,.82);text-transform:uppercase}
+@media (max-width:600px){.sp-hello b{font-size:27px}.sp-hello span{font-size:12.5px;letter-spacing:1.5px}}
 /* splash: logos only, bigger */
 .sp-logo{width:320px;height:320px}
 .sp-cos{gap:30px;margin-top:22px;animation-delay:1.25s}
@@ -897,6 +902,7 @@ body:has(#splash) .greet .gt{opacity:0}
   <aside class="side" aria-label="Sections">
     <div class="brand"><div class="mark"><img src="bkwik-logo.png" alt=""></div><div><b>B KWIK</b><small>Admin</small></div></div>
     <nav class="nav" id="sidenav"></nav>
+    <div class="clock side-clock" data-clock aria-live="off"></div>
     <div class="sideacts">
     <button class="undo-btn srch" data-act="search" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button>
     <button class="undo-btn" data-act="undo" aria-label="Undo last change" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
@@ -906,10 +912,9 @@ body:has(#splash) .greet .gt{opacity:0}
   <main>
     <div class="mtop">
       <div class="brand"><div class="mark"><img src="bkwik-logo.png" alt=""></div><div><b>B KWIK</b><small>Admin</small></div></div>
-      <div class="topacts"><button class="undo-btn icon srch" data-act="search" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><button class="undo-btn icon" data-act="undo" aria-label="Undo last change" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
-      <button class="gear icon" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div>
+      <div class="topright"><div class="clock" data-clock aria-live="off"></div><div class="topacts"><button class="undo-btn icon srch" data-act="search" aria-label="Search"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button><button class="undo-btn icon" data-act="undo" aria-label="Undo last change" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg></button>
+      <button class="gear icon" data-act="settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button></div></div>
     </div>
-    <div class="greet" id="greet" aria-live="polite"></div>
     <div class="ctabs" role="tablist" aria-label="Companies" id="ctabs"></div>
     <div class="view" id="view"><p class="loading">Loading your companies…</p></div>
   </main>
@@ -920,6 +925,7 @@ body:has(#splash) .greet .gt{opacity:0}
   <div class="splash-in">
     <div class="sp-logo"><img src="bkwik-logo.png" alt="" width="200" height="200"><span class="sp-shine"></span></div>
     <div class="sp-cos"><img src="logo-dalby-dark.png" alt="" width="120" height="120"><span class="sp-sep"></span><img src="logo-kwik.png" alt="" width="120" height="120"></div>
+    <p class="sp-hello" id="sphello"></p>
   </div>
 </div>
 <div id="gate" class="gate" hidden><div class="gatecard"><img class="gatelogo" src="bkwik-logo.png" alt="B KWIK logo" width="120" height="120"><h1>B KWIK</h1><p class="gatesub">Admin sign-in</p><div class="gbtn-wrap"><div id="gbtn"></div></div><p id="gatemsg" class="small muted"></p></div></div>
@@ -1620,7 +1626,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.08.11';
+const APP_VERSION='2026.11.08.12';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -1761,19 +1767,21 @@ function openDownload(){
 
 /* ---------- shell ---------- */
 function renderShell(){
-  renderGreet();
+  renderClock();
   $('#ctabs').innerHTML=COMPANIES.map(co=>{const c=state[co.id];return `<button class="ctab" role="tab" aria-selected="${co.id===cur}" data-co="${co.id}"><b>${esc(c.name)}</b></button>`}).join('');
   const nav=SECTIONS.map(s=>`<button data-go="${s.id}"${s.id===sec?' aria-current="page"':''}><svg viewBox="0 0 24 24" aria-hidden="true">${ICONS[s.id]}</svg><span>${s.label}</span></button>`).join('');
   $('#sidenav').innerHTML=nav;$('#bnav').innerHTML=nav;
 }
 function greetInfo(){const h=new Date().getHours();
   return h<5?{t:'Good evening',ic:'moon'}:h<12?{t:'Good morning',ic:'sun'}:h<17?{t:'Good afternoon',ic:'sun'}:{t:'Good evening',ic:'moon'}}
-function renderGreet(){const g=$('#greet');if(!g)return;const {t,ic}=greetInfo();
-  const svg=ic==='sun'?'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>':'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>';
-  const day=new Date().toLocaleDateString('en-AU',{weekday:'long',day:'numeric',month:'long'});
-  const html=`<span class="gi"><svg viewBox="0 0 24 24" aria-hidden="true">${svg}</svg></span><span class="gt"><b>${t}</b> and welcome to B KWIK</span><span class="gd">${day}</span>`;
-  if(g.innerHTML!==html)g.innerHTML=html}
-setInterval(renderGreet,60000);
+{const sh=document.getElementById('sphello');if(sh){const g=greetInfo();sh.innerHTML=`<b>${g.t}</b><span>and welcome to B KWIK</span>`}}
+function renderClock(){const d=new Date();
+  const time=d.toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit',hour12:true}).replace(/\s?(am|pm)/i,(m,x)=>' '+x.toLowerCase());
+  const day=d.toLocaleDateString('en-AU',{weekday:'long'}),dshort=d.toLocaleDateString('en-AU',{weekday:'short'});
+  const date=d.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'});
+  const html=`<span class="ct">${time}</span><span class="cdl"><span class="cdw">${day}</span><span class="cds">${dshort}</span>, ${date}</span>`;
+  document.querySelectorAll('[data-clock]').forEach(el=>{if(el.innerHTML!==html)el.innerHTML=html})}
+renderClock();setInterval(renderClock,10000);
 function render(){
   document.body.dataset.co=cur;document.body.dataset.sec=sec;
   {const src=logoSrc(C()),bl=$('#bglogo');bl.style.backgroundImage=src?`url("${src}${src.startsWith('data:')?'':'?v=3'}")`:'none'}
@@ -2431,7 +2439,7 @@ setInterval(checkAppVersion,120000);window.addEventListener('focus',checkAppVers
 setTimeout(()=>{Object.values(LETTERHEAD).forEach(L=>{imgData(L.first+'?v='+APP_VERSION).catch(()=>{});imgData(L.next+'?v='+APP_VERSION).catch(()=>{})})},6000);
 window.addEventListener('focus',()=>pullUpdates());
 window.addEventListener('online',()=>{COMPANIES.forEach(co=>{if(readUnsynced()[co.id])queueSave(co.id)});setTimeout(pullUpdates,1500)});
-const splashDone=new Promise(res=>setTimeout(res,matchMedia('(prefers-reduced-motion: reduce)').matches?600:3200));
+const splashDone=new Promise(res=>setTimeout(res,matchMedia('(prefers-reduced-motion: reduce)').matches?600:3700));
 function hideSplash(){const sp=$('#splash');if(sp){sp.classList.add('out');setTimeout(()=>sp.remove(),700)}}
 (async function init(){
   readHash();render();
