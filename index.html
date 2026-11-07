@@ -881,10 +881,10 @@ body[data-mode="dark"] .fab svg{filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))}
 .topright .clock .cdw{display:none}.topright .clock .cds{display:inline}
 body[data-mode="dark"] .clock .ct{color:var(--third)}
 /* splash welcome */
-.sp-hello{margin-top:26px;text-align:center;color:#fff;opacity:0;animation:spFade .8s ease-out 1.7s both;display:flex;flex-direction:column;align-items:center;gap:6px}
-.sp-hello b{font:600 34px/1.1 Georgia,"Times New Roman",serif;letter-spacing:.5px;text-shadow:0 4px 18px rgba(0,0,0,.35)}
-.sp-hello span{font:500 15px "IBM Plex Sans",system-ui,sans-serif;letter-spacing:2px;color:rgba(255,255,255,.82);text-transform:uppercase}
-@media (max-width:600px){.sp-hello b{font-size:27px}.sp-hello span{font-size:12.5px;letter-spacing:1.5px}}
+.sp-hello{margin:0 16px 22px;text-align:center;color:#fff;opacity:0;animation:spFade .8s ease-out 1.5s both;display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;column-gap:10px;row-gap:2px}
+.sp-hello b{font:600 34px/1.15 Georgia,"Times New Roman",serif;letter-spacing:.5px;text-shadow:0 4px 18px rgba(0,0,0,.35)}
+.sp-hello span{font:400 26px/1.15 Georgia,"Times New Roman",serif;letter-spacing:.3px;color:rgba(255,255,255,.85)}
+@media (max-width:600px){.sp-hello{column-gap:6px}.sp-hello b{font-size:21px}.sp-hello span{font-size:16.5px}}
 /* splash: logos only, bigger */
 .sp-logo{width:320px;height:320px}
 .sp-cos{gap:30px;margin-top:22px;animation-delay:1.25s}
@@ -923,9 +923,9 @@ body[data-mode="dark"] .clock .ct{color:var(--third)}
 <div class="bglogo" id="bglogo" aria-hidden="true"></div>
 <div id="splash" class="splash" aria-label="B KWIK">
   <div class="splash-in">
+    <p class="sp-hello" id="sphello"></p>
     <div class="sp-logo"><img src="bkwik-logo.png" alt="" width="200" height="200"><span class="sp-shine"></span></div>
     <div class="sp-cos"><img src="logo-dalby-dark.png" alt="" width="120" height="120"><span class="sp-sep"></span><img src="logo-kwik.png" alt="" width="120" height="120"></div>
-    <p class="sp-hello" id="sphello"></p>
   </div>
 </div>
 <div id="gate" class="gate" hidden><div class="gatecard"><img class="gatelogo" src="bkwik-logo.png" alt="B KWIK logo" width="120" height="120"><h1>B KWIK</h1><p class="gatesub">Admin sign-in</p><div class="gbtn-wrap"><div id="gbtn"></div></div><p id="gatemsg" class="small muted"></p></div></div>
@@ -1626,7 +1626,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.08.12';
+const APP_VERSION='2026.11.08.13';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
