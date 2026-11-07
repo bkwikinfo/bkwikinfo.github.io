@@ -701,7 +701,6 @@ td.delcell{width:44px;text-align:right}
 .toast{display:flex;align-items:center;gap:12px}
 .toast-undo{background:none;border:1px solid rgba(255,255,255,.6);color:#fff;border-radius:8px;padding:4px 10px;font-weight:700;font-size:13px}
 @media (max-width:600px){table.rt td.delcell{position:absolute;right:0;top:8px;width:auto}table.rt tr{position:relative}table.rt td.delcell::before{display:none}}
-body[data-mode="dark"][data-co="dalby"] .clogo{filter:brightness(1.9) saturate(1.1) drop-shadow(0 0 6px rgba(142,207,220,.45))}
 @media (prefers-reduced-motion:reduce){.sp-logo,.sp-logo img,.sp-name span,.sp-line,.sp-sub{animation-duration:.01s!important;animation-delay:0s!important}.sp-line{width:180px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -941,7 +940,7 @@ function vOverview(c){
   </div>
 `:`<div class="remwrap">${vMessages(c,true)}</div>`}</div></div>`;
 }
-function logoSrc(c){if(c.logo==='none')return '';if(c.logo&&String(c.logo).startsWith('data:image/'))return c.logo;return `logo-${c.id}.png`}
+function logoSrc(c){if(c.logo==='none')return '';if(c.logo&&String(c.logo).startsWith('data:image/'))return c.logo;return c.id==='dalby'&&document.body.dataset.mode==='dark'?'logo-dalby-dark.png':`logo-${c.id}.png`}
 function landFacts(c){
   const l=c.land;
   return `<dl class="facts">
@@ -1435,7 +1434,7 @@ function readHash(){const [c,s]=(location.hash.slice(1)||'').split('-');if(state
 /* ---------- light / dark / auto ---------- */
 let modePref='auto';try{modePref=localStorage.getItem('pbk-mode')||'auto'}catch(e){}
 const mq=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null;
-function applyMode(){const m=modePref==='auto'?(mq&&mq.matches?'dark':'light'):modePref;document.body.dataset.mode=m}
+function applyMode(){const m=modePref==='auto'?(mq&&mq.matches?'dark':'light'):modePref;const ch=document.body.dataset.mode!==m;document.body.dataset.mode=m;if(ch&&typeof render==='function'&&loaded!==undefined)try{render()}catch(e){}}
 if(mq&&mq.addEventListener)mq.addEventListener('change',()=>{if(modePref==='auto')applyMode()});
 function setMode(m){modePref=m;try{localStorage.setItem('pbk-mode',m)}catch(e){}applyMode();document.querySelectorAll('.modes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m))}
 applyMode();
