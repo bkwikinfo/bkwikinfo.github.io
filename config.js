@@ -1,5 +1,5 @@
-// Project B KWIK settings. Fill these two values in after the Google setup.
+// Project B KWIK settings.
 window.PBK_CONFIG = {
-  scriptUrl: '',   // Apps Script web app link (ends in /exec)
-  clientId: ''     // Google OAuth client ID (ends in .apps.googleusercontent.com)
+  scriptUrl: 'https://script.google.com/macros/s/AKfycbzbqaXdVhNTwRmcZZq6yNDdodkWsnuLJx_wAA8Yq1k0E3XGBcVjmGiW6HRxITe4GMt9/exec',
+  clientId: '638627569252-6p3g98i76bh9lbdml0jgs0k1n5p7pvqv.apps.googleusercontent.com'
 };

@@ -4,7 +4,7 @@
  * (signed in as bkwikinfo@gmail.com), fill in CLIENT_ID below, run setup() once, then
  * Deploy → New deployment → Web app (Execute as: Me, Who has access: Anyone).
  */
-const CLIENT_ID = 'PASTE-YOUR-GOOGLE-OAUTH-CLIENT-ID.apps.googleusercontent.com';
+const CLIENT_ID = '638627569252-6p3g98i76bh9lbdml0jgs0k1n5p7pvqv.apps.googleusercontent.com';
 const ADMIN_EMAILS = ['bkwikinfo@gmail.com'];
 const COMPANIES = {
   dalby: { name: 'B IN DALBY', from: 'bindalbyptyltd@gmail.com' },
