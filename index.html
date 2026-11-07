@@ -653,7 +653,7 @@ body[data-mode="dark"] .setlabel.big{color:var(--ink)}
 .gatecard{display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:32px 24px;border-radius:18px;background:color-mix(in srgb,var(--glass) 60%,transparent);border:1px solid var(--line);min-width:300px}
 .mark.big{width:64px;height:64px;font-size:28px;border-radius:14px}
 /* B KWIK logo mark */
-.mark{background:#fff!important;padding:4px}
+.mark{background:transparent!important;padding:0;box-shadow:none}
 .mark img{width:100%;height:100%;object-fit:contain;display:block}
 .gatelogo{width:120px;height:120px;object-fit:contain;filter:drop-shadow(0 8px 18px rgba(10,40,90,.25))}
 /* opening animation */
@@ -662,10 +662,9 @@ body[data-mode="dark"] .setlabel.big{color:var(--ink)}
   transition:opacity .6s ease, visibility .6s}
 .splash.out{opacity:0;visibility:hidden}
 .splash-in{display:flex;flex-direction:column;align-items:center;gap:14px}
-.sp-logo{position:relative;width:200px;height:200px;border-radius:44px;background:#fff;display:grid;place-items:center;overflow:hidden;
-  box-shadow:0 30px 80px rgba(0,0,0,.45);animation:spPop 1.1s cubic-bezier(.2,1.4,.4,1) both}
-.sp-logo img{width:86%;height:86%;object-fit:contain;animation:spSpin 1.2s cubic-bezier(.2,.9,.3,1) .1s both}
-.sp-shine{position:absolute;inset:-40%;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.85) 50%,transparent 60%);transform:translateX(-120%);animation:spShine 1s ease-in-out 1.15s both}
+.sp-logo{position:relative;width:220px;height:220px;display:grid;place-items:center;overflow:hidden;filter:drop-shadow(0 18px 40px rgba(0,0,0,.45));animation:spPop 1.1s cubic-bezier(.2,1.4,.4,1) both}
+.sp-logo img{width:100%;height:100%;object-fit:contain;animation:spSpin 1.2s cubic-bezier(.2,.9,.3,1) .1s both}
+.sp-shine{position:absolute;inset:0;-webkit-mask:url(bkwik-logo.png) center/contain no-repeat;mask:url(bkwik-logo.png) center/contain no-repeat;background:linear-gradient(115deg,transparent 35%,rgba(255,255,255,.9) 50%,transparent 65%) no-repeat;background-size:250% 100%;background-position:120% 0;animation:spShine 1s ease-in-out 1.15s both}
 .sp-name{display:flex;gap:2px;font:700 40px/1 "IBM Plex Sans",system-ui,sans-serif;letter-spacing:6px;color:#fff}
 .sp-name span{opacity:0;transform:translateY(14px);animation:spUp .5s ease-out both}
 .sp-name span:nth-child(1){animation-delay:.9s}.sp-name span:nth-child(3){animation-delay:1.0s}.sp-name span:nth-child(4){animation-delay:1.08s}.sp-name span:nth-child(5){animation-delay:1.16s}.sp-name span:nth-child(6){animation-delay:1.24s}
@@ -674,11 +673,11 @@ body[data-mode="dark"] .setlabel.big{color:var(--ink)}
 .sp-sub{color:rgba(255,255,255,.8);font:600 12px "IBM Plex Sans",sans-serif;letter-spacing:3px;opacity:0;animation:spFade .6s ease-out 1.8s both}
 @keyframes spPop{0%{transform:scale(.3);opacity:0}100%{transform:scale(1);opacity:1}}
 @keyframes spSpin{0%{transform:rotate(-120deg) scale(.4);opacity:0}100%{transform:none;opacity:1}}
-@keyframes spShine{to{transform:translateX(120%)}}
+@keyframes spShine{from{background-position:120% 0}to{background-position:-120% 0}}
 @keyframes spUp{to{opacity:1;transform:none}}
 @keyframes spLine{to{width:180px}}
 @keyframes spFade{to{opacity:1}}
-@media (max-width:600px){.sp-logo{width:150px;height:150px;border-radius:34px}.sp-name{font-size:32px}}
+@media (max-width:600px){.sp-logo{width:170px;height:170px}.sp-name{font-size:32px}}
 @media (prefers-reduced-motion:reduce){.sp-logo,.sp-logo img,.sp-name span,.sp-line,.sp-sub{animation-duration:.01s!important;animation-delay:0s!important}.sp-line{width:180px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
@@ -896,7 +895,7 @@ function vOverview(c){
       <p class="eyebrow">${esc(c.purpose||'Investment company')}</p>
     </div></div>
     <div class="hmeta">
-      <p class="addr">${land.address?esc(land.address):'<span class="muted">Add the land address</span>'}</p>
+      <p class="addr">${land.address?esc(land.address):c.regAddress?esc(c.regAddress):'<span class="muted">Add the land address in Settings</span>'}</p>
       <div class="chips"><span class="chip gold">${sizeText(land)}</span>${land.lot?`<span class="chip">${esc(land.lot)}</span>`:''}${land.settlementDate?`<span class="chip">Settled ${fd(land.settlementDate)}</span>`:''}${c.abn?`<span class="chip">ABN ${esc(c.abn)}</span>`:''}</div>
     </div>
   </section>
@@ -1521,6 +1520,18 @@ function formSetup(){
       if(num(v.estFee)>0)c.payments.push({id:uid(),date:v.startDate||iso(today()),type:'fee',bank:c.loan.lender,amount:num(v.estFee),note:'Establishment fee',setup:'estfee'});
     }});
 }
+const AU_STATES=[['QLD','QLD – Queensland'],['NSW','NSW – New South Wales'],['VIC','VIC – Victoria'],['SA','SA – South Australia'],['WA','WA – Western Australia'],['TAS','TAS – Tasmania'],['NT','NT – Northern Territory'],['ACT','ACT – Australian Capital Territory']];
+function addrParts(o,k){const a=o[k+'Parts'];if(a&&typeof a==='object')return a;const t=String(o[k]||'').trim();if(!t)return {street:'',suburb:'',state:'QLD',postcode:''};
+  const m=t.match(/^(.*?),\s*([^,]+?)\s+(QLD|NSW|VIC|SA|WA|TAS|NT|ACT)\s+(\d{4})\s*$/i);return m?{street:m[1],suburb:m[2],state:m[3].toUpperCase(),postcode:m[4]}:{street:t,suburb:'',state:'QLD',postcode:''}}
+function addrText(a){const tail=[a.suburb,a.state,a.postcode].map(x=>String(x||'').trim()).filter(Boolean).join(' ');return [String(a.street||'').trim(),tail].filter(Boolean).join(', ')}
+function addrFields(pre,a,label){return [
+  {id:pre+'street',label:label+' – street',value:a.street,placeholder:'e.g. Lot 12, 45 Warrego Highway'},
+  {id:pre+'suburb',label:'Suburb or town',value:a.suburb,half:1,placeholder:'e.g. Dalby'},
+  {id:pre+'state',label:'State',type:'select',options:AU_STATES,value:a.state||'QLD',half:1},
+  {id:pre+'postcode',label:'Postcode',value:a.postcode,half:1,placeholder:'e.g. 4405'},
+  {id:pre+'pv',type:'html',html:''}]}
+function addrFrom(v,pre){return {street:v[pre+'street'],suburb:v[pre+'suburb'],state:v[pre+'state'],postcode:String(v[pre+'postcode']||'').trim()}}
+function addrPreview(f,pre){const g=k=>{const e=f.querySelector('#f_'+pre+k);return e?e.value:''};const el=f.querySelector('#f_'+pre+'pv');if(el){const t=addrText({street:g('street'),suburb:g('suburb'),state:g('state'),postcode:g('postcode')});el.innerHTML=t?`<p class="small muted">Shows as: <b>${esc(t)}</b></p>`:''}}
 function formCompany(){
   const c=C();
   openForm({title:'Company details',done:'Company details saved',fields:[
@@ -1528,27 +1539,27 @@ function formCompany(){
     {id:'purpose',label:'Description',value:c.purpose,placeholder:'e.g. Land, supermarket and fuel station'},
     {id:'abn',label:'ABN',value:c.abn,half:1,placeholder:'11 digits'},
     {id:'acn',label:'ACN',value:c.acn,half:1,placeholder:'9 digits'},
-    {id:'regAddress',label:'Registered address',value:c.regAddress},
+    ...addrFields('r_',addrParts(c,'regAddress'),'Registered address'),
     {id:'email',label:'Company email (reminders are sent from this)',type:'email',value:c.email,half:1},
     {id:'phone',label:'Company phone',type:'tel',value:c.phone,half:1},
     {id:'accountant',label:'Accountant',value:c.accountant,half:1,placeholder:'Name or firm'},
     {id:'accountantEmail',label:'Accountant email',type:'email',value:c.accountantEmail,half:1},
     {id:'notes',label:'Notes',type:'textarea',rows:3,value:c.notes}
-  ],onSave:v=>{Object.assign(c,{...v,name:v.name.trim()})}});
+  ],onInput:f=>addrPreview(f,'r_'),onSave:v=>{if(v.r_postcode&&!/^\d{4}$/.test(String(v.r_postcode).trim()))return 'Postcode must be 4 digits.';const ra=addrFrom(v,'r_');const o={};Object.keys(v).forEach(k=>{if(!k.startsWith('r_'))o[k]=v[k]});Object.assign(c,{...o,name:v.name.trim(),regAddress:addrText(ra),regAddressParts:ra})}});
 }
 function formLand(){
   const c=C(),l=c.land;
   openForm({title:'Land details',done:'Land details saved',fields:[
-    {id:'address',label:'Land address',value:l.address,placeholder:'Street, suburb, state, postcode'},
+    ...addrFields('a_',addrParts(l,'address'),'Land address'),
     {id:'lot',label:'Lot and plan',value:l.lot,placeholder:'e.g. Lot 12 on RP123456',half:1},
     {id:'council',label:'Council',value:l.council,half:1,placeholder:'e.g. Western Downs'},
     {id:'size',label:'Land size',type:'number',value:l.size,half:1},
     {id:'unit',label:'Size unit',type:'select',options:[['m2','Square metres (m²)'],['ha','Hectares (ha)']],value:l.unit,half:1},
     {id:'zoning',label:'Zoning',value:l.zoning,half:1,placeholder:'e.g. Commercial'},
-    {id:'value',label:'Total land value ($)',type:'number',value:l.value,required:1,half:1},
+    {id:'value',label:'Total land value ($)',type:'number',value:l.value,half:1},
     {id:'purchaseDate',label:'Purchase date',type:'date',value:l.purchaseDate,half:1},
     {id:'settlementDate',label:'Settlement date',type:'date',value:l.settlementDate,half:1}
-  ],onSave:v=>{Object.assign(c.land,v)}});
+  ],onInput:f=>addrPreview(f,'a_'),onSave:v=>{if(v.a_postcode&&!/^\d{4}$/.test(String(v.a_postcode).trim()))return 'Postcode must be 4 digits.';const a=addrFrom(v,'a_');const o={};Object.keys(v).forEach(k=>{if(!k.startsWith('a_'))o[k]=v[k]});Object.assign(c.land,{...o,address:addrText(a),addressParts:a})}});
 }
 function formPerson(id,share){
   const c=C(),p=c.shareholders.find(x=>x.id===id);
