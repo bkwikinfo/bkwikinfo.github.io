@@ -24,6 +24,7 @@ function doPost(e) {
       case 'whoami': return json({ ok: true, email: user });
       case 'load': return json({ ok: true, companies: Object.keys(COMPANIES).reduce((o, id) => { o[id] = load_(id); return o; }, {}) });
       case 'save': return json(save_(req.id, req.data, req.version));
+      case 'versions': return json({ ok: true, versions: Object.keys(COMPANIES).reduce((o, id) => { const x = load_(id); o[id] = x ? x.version : 0; return o; }, {}) });
       case 'sendEmail': return json(sendEmail_(req.id, req.emails || [], req.attachment));
       default: return json({ ok: false, error: 'Unknown action' });
     }

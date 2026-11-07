@@ -1924,22 +1924,91 @@ function signIn(silent){
   return signInWait;
 }
 function signOut(){try{localStorage.removeItem('pbk-token')}catch(e){}authToken=null;try{google.accounts.id.disableAutoSelect()}catch(e){}location.reload()}
+/* ---------- multi-device sync ---------- */
+let base={},lastSync=0,retryT=null;
+const coOf=id=>COMPANIES.find(x=>x.id===id);
+const COLLS=['shareholders','contributions','payments','expenses','stages','reminders','messages'];
+const js=x=>JSON.stringify(x===undefined?null:x);
+function mergeArr(b,l,r){b=b||[];l=l||[];r=r||[];
+  const B=new Map(b.map(x=>[x.id,js(x)])),L=new Map(l.map(x=>[x.id,x])),R=new Map(r.map(x=>[x.id,x]));
+  let out=r.map(x=>x);
+  for(const [id,bv] of B){if(!L.has(id)&&R.has(id)&&js(R.get(id))===bv)out=out.filter(x=>x.id!==id)}
+  for(const x of l){const bv=B.get(x.id),lv=js(x);
+    if(bv===undefined){if(!R.has(x.id))out.push(x)}
+    else if(bv!==lv){const i=out.findIndex(o=>o.id===x.id);if(i>=0)out[i]=x;else out.push(x)}}
+  return out}
+function mergeObj(b,l,r,skip){b=b||{};l=l||{};r=r||{};const out={...r};
+  new Set([...Object.keys(l),...Object.keys(b)]).forEach(k=>{if(skip&&skip.includes(k))return;if(js(l[k])!==js(b[k]))out[k]=l[k]});return out}
+function mergeList(b,l,r){b=b||[];l=l||[];r=r||[];const add=l.filter(x=>!b.includes(x)),del=b.filter(x=>!l.includes(x));return [...new Set([...r,...add])].filter(x=>!del.includes(x))}
+function merge3(b,l,r){
+  const out=mergeObj(b,l,r,[...COLLS,'land','loan','banks','utilityTypes']);
+  COLLS.forEach(k=>out[k]=mergeArr(b[k],l[k],r[k]));
+  out.land=mergeObj(b.land,l.land,r.land);
+  const bl=b.loan||{},ll=l.loan||{},rl=r.loan||{};
+  out.loan={...mergeObj(bl,ll,rl,['rates']),rates:mergeArr(bl.rates,ll.rates,rl.rates)};
+  out.banks=mergeList(b.banks,l.banks,r.banks);out.utilityTypes=mergeList(b.utilityTypes,l.utilityTypes,r.utilityTypes);
+  return out}
+const unsyncedKey='pbk-unsynced';
+function readUnsynced(){try{return JSON.parse(localStorage.getItem(unsyncedKey)||'{}')}catch(e){return {}}}
+function writeUnsynced(o){try{localStorage.setItem(unsyncedKey,JSON.stringify(o))}catch(e){}}
+function markUnsynced(id){const u=readUnsynced();u[id]={data:state[id],base:base[id]||null,version:versions[id]||0,at:Date.now()};writeUnsynced(u)}
+function clearUnsynced(id){const u=readUnsynced();delete u[id];writeUnsynced(u)}
+function applyRemote(id,data,version){
+  state[id]=normalize(data,coOf(id));base[id]=js(state[id]);versions[id]=version;
+  shadow[id]=js(state[id]);undoStack=undoStack.filter(u=>u.id!==id);updUndo()}
+function syncLabel(){if(!lastSync)return 'All changes saved';const t=new Date(lastSync);return 'Synced '+t.toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'})}
 async function doSave(id){
   if(writing[id]){pending[id]=true;return}
-  writing[id]=true;
+  writing[id]=true;markUnsynced(id);clearTimeout(retryT);
   try{
-    const res=await api('save',{id,data:JSON.parse(JSON.stringify(state[id])),version:versions[id]||0});
-    if(res.ok){versions[id]=res.version;setStatus('ok','All changes saved')}
-    else if(res.conflict){versions[id]=res.version;state[id]=normalize(res.data,COMPANIES.find(x=>x.id===id));shadow[id]=JSON.stringify(state[id]);render();setStatus('ok','Updated from the server');toast('This company was changed elsewhere (or a reminder was sent). The latest figures are now showing. Please redo your last change.')}
-    else{setStatus('off','Not saved');toast('Could not save: '+(res.error||'try again'))}
-  }catch(e){setStatus('off','Not saved');toast('Could not save. Check your internet connection.')}
+    for(let attempt=0;attempt<5;attempt++){
+      const sent=JSON.parse(js(state[id]));
+      setStatus('busy','Syncing…');
+      const res=await api('save',{id,data:sent,version:versions[id]||0});
+      if(res.ok){versions[id]=res.version;base[id]=js(sent);if(js(state[id])===base[id])clearUnsynced(id);lastSync=Date.now();setStatus('ok',syncLabel());break}
+      if(res.conflict){
+        const remote=normalize(res.data,coOf(id));
+        const merged=normalize(merge3(JSON.parse(base[id]||'{}'),state[id],JSON.parse(js(remote))),coOf(id));
+        state[id]=merged;base[id]=js(remote);versions[id]=res.version;shadow[id]=js(merged);
+        if($('#modal').hidden)render();
+        continue}
+      throw new Error(res.error||'save failed')
+    }
+  }catch(e){setStatus('off','Offline – will sync');retryT=setTimeout(()=>COMPANIES.forEach(co=>{if(readUnsynced()[co.id])queueSave(co.id)}),15000)}
   finally{writing[id]=false;if(pending[id]){pending[id]=false;doSave(id)}}
 }
-async function reloadAll(){setTimeout(snapAll,0);
+async function reloadAll(){
   const res=await api('load',{});
   if(!res.ok)throw new Error(res.error||'Could not load');
-  COMPANIES.forEach(co=>{const x=res.companies[co.id];if(x&&x.data){state[co.id]=normalize(x.data,co);versions[co.id]=x.version}else{versions[co.id]=0}});
+  const un=readUnsynced();
+  COMPANIES.forEach(co=>{const x=res.companies[co.id],v=x?x.version:0,d=x&&x.data?x.data:blank(co.id,co.name);
+    applyRemote(co.id,d,v);
+    const u=un[co.id];
+    if(u&&u.data){const loc=normalize(u.data,co);
+      state[co.id]=u.version===v?loc:normalize(merge3(u.base?JSON.parse(u.base):JSON.parse(base[co.id]),loc,JSON.parse(base[co.id])),co);
+      shadow[co.id]=js(state[co.id]);setTimeout(()=>queueSave(co.id),50)}
+  });
+  lastSync=Date.now();
 }
+async function pullUpdates(){
+  if(!db||!authToken||document.visibilityState!=='visible')return;
+  if(!$('#modal').hidden||Object.values(writing).some(Boolean)||Object.values(pending).some(Boolean)||Object.keys(readUnsynced()).length)return;
+  try{
+    let vs=null;const r=await api('versions',{});
+    if(r.ok&&r.versions)vs=r.versions;
+    const changed=vs?COMPANIES.filter(co=>(vs[co.id]||0)!==(versions[co.id]||0)):COMPANIES;
+    if(!changed.length){lastSync=Date.now();setStatus('ok',syncLabel());return}
+    const res=await api('load',{});if(!res.ok)return;
+    if(!$('#modal').hidden||Object.values(writing).some(Boolean)||Object.keys(readUnsynced()).length)return;
+    let any=false;
+    COMPANIES.forEach(co=>{const x=res.companies[co.id];if(x&&x.version!==(versions[co.id]||0)){applyRemote(co.id,x.data,x.version);any=true}});
+    lastSync=Date.now();setStatus('ok',syncLabel());
+    if(any){render();toast('Updated with changes from your other device')}
+  }catch(e){}
+}
+setInterval(pullUpdates,20000);
+window.addEventListener('focus',()=>pullUpdates());
+window.addEventListener('online',()=>{COMPANIES.forEach(co=>{if(readUnsynced()[co.id])queueSave(co.id)});setTimeout(pullUpdates,1500)});
 const splashDone=new Promise(res=>setTimeout(res,matchMedia('(prefers-reduced-motion: reduce)').matches?600:3200));
 function hideSplash(){const sp=$('#splash');if(sp){sp.classList.add('out');setTimeout(()=>sp.remove(),700)}}
 (async function init(){
@@ -1948,10 +2017,10 @@ function hideSplash(){const sp=$('#splash');if(sp){sp.classList.add('out');setTi
   try{const t=localStorage.getItem('pbk-token');if(t&&tokenExp(t)>Date.now()+60000){authToken=t;authEmail=tokenEmail(t)}}catch(e){}
   if(!authToken){await splashDone;hideSplash();await signIn(true)}
   db=true;setStatus('busy','Loading…');
-  try{await Promise.all([reloadAll(),splashDone]);hideSplash();setStatus('ok','All changes saved')}
+  try{await Promise.all([reloadAll(),splashDone]);hideSplash();setStatus('ok',syncLabel())}
   catch(e){hideSplash();setStatus('off','Could not load saved data');toast('Could not load your data: '+e.message)}
-  finally{loaded=true;snapAll();render()}
-  document.addEventListener('visibilitychange',async()=>{if(document.visibilityState==='visible'&&!Object.values(writing).some(Boolean)&&$('#modal').hidden){try{await reloadAll();render()}catch(e){}}});
+  finally{loaded=true;render()}
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')pullUpdates()});
   if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js')}catch(e){}}
 })();
 </script>
