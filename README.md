@@ -1,4 +1,4 @@
-# Project B KWIK
+# B KWIK
 
 Admin app for **B IN DALBY** and **KWIK TRIP** — shareholders, mortgage, outgoings, reminders and reports.
 Works on phone and laptop. Live at **https://bkwikinfo.github.io**.
