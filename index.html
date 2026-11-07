@@ -1312,7 +1312,7 @@ function vReports(c){
   const opt=(v,l,cur)=>`<option value="${esc(v)}"${String(cur)===String(v)?' selected':''}>${esc(l)}</option>`;
   return `
   <div class="pagehead"><div><h1>Reports</h1></div>
-    <div class="actions"><button class="btn" data-act="rep-download">Download</button><button class="btn" data-act="copy-report">Copy</button><button class="btn gold" data-act="rep-send">Send</button></div></div>
+    <div class="actions"><button class="btn" data-act="letter">Letter</button><button class="btn" data-act="rep-download">Download</button><button class="btn" data-act="copy-report">Copy</button><button class="btn gold" data-act="rep-send">Send</button></div></div>
   <div class="vscroll">
   <section class="card rbuild">
     <div class="rpresets">${Object.entries(RPRESETS).map(([k,p])=>`<button class="btn sm" data-act="rep-preset" data-id="${k}">${esc(p.label)}</button>`).join('')}</div>
@@ -1368,26 +1368,36 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
+const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:551,pageY:47}};
+const lhCache={};
+async function imgData(url){if(lhCache[url])return lhCache[url];const r=await fetch(url);const b=await r.blob();return lhCache[url]=await new Promise((ok,bad)=>{const f=new FileReader();f.onload=()=>ok(f.result);f.onerror=bad;f.readAsDataURL(b)})}
+async function letterheadFor(id){const L=LETTERHEAD[id];if(!L)return null;try{return {...L,img1:await imgData(L.first),img2:await imgData(L.next)}}catch(e){return null}}
+function useLetterhead(doc,LH,W,H){
+  doc.addImage(LH.img1,'JPEG',0,0,W,H,'lh1','FAST');
+  doc.internal.events.subscribe('addPage',()=>{doc.addImage(LH.img2,'JPEG',0,0,W,H,'lh2','FAST')});
+}
 async function buildPdf(M){
   await loadPdfLib();
   const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'pt',format:'a4'});
   const cs=getComputedStyle(document.body),NAVY=hexOf(cs.getPropertyValue('--navy').trim()),ACC=hexOf(cs.getPropertyValue('--gold').trim()),W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),mx=40;
   const txt=s=>String(s).replace(/m\u00b2/g,'sq m').replace(/[^\x20-\x7E -ÿ]/g,c=>c==='²'?'2':c==='—'?'-':c==='–'?'-':c==='·'?'·':'');
-  let y=48;
-  doc.setFillColor(...ACC);doc.rect(0,0,W,6,'F');
+  const LH=(M.cos.length===1)?await letterheadFor(M.cos[0].id):null;
+  const TOP2=LH?LH.top2:48,BOT=LH?LH.bottom:50;
+  let y=LH?LH.top1:48;
+  if(LH)useLetterhead(doc,LH,W,H);else{doc.setFillColor(...ACC);doc.rect(0,0,W,6,'F')}
   doc.setFont('times','normal');doc.setFontSize(22);doc.setTextColor(...NAVY);doc.text(txt(M.title),mx,y);y+=18;
   doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(90,104,126);doc.text(txt(`${M.sub} · Prepared ${M.made}`),mx,y,{maxWidth:W-2*mx});y+=12;
   doc.setDrawColor(...ACC);doc.setLineWidth(1.5);doc.line(mx,y,W-mx,y);y+=16;
-  const need=h=>{if(y+h>H-50){doc.addPage();y=48}};
+  const need=h=>{if(y+h>H-BOT){doc.addPage();y=TOP2}};
   const head=t=>{need(40);doc.setFont('helvetica','bold');doc.setFontSize(12);doc.setTextColor(...NAVY);doc.text(txt(t),mx,y);y+=6};
   for(const b of M.blocks){
     if(b.type==='company'){need(50);y+=6;doc.setDrawColor(200,205,215);doc.setLineWidth(.6);doc.line(mx,y,W-mx,y);y+=20;doc.setFont('times','normal');doc.setFontSize(17);doc.setTextColor(...NAVY);doc.text(txt(b.title),mx,y);y+=24;continue}
     head(b.title);
-    if(b.type==='kv'){doc.autoTable({startY:y,margin:{left:mx,right:mx},theme:'plain',styles:{fontSize:9.5,cellPadding:3,textColor:[21,33,58]},columnStyles:{0:{textColor:[90,104,126],cellWidth:190},1:{fontStyle:'bold'}},body:b.items.map(([k,v])=>[txt(k),txt(v)])});y=doc.lastAutoTable.finalY+14;continue}
+    if(b.type==='kv'){doc.autoTable({startY:y,margin:{left:mx,right:mx,top:TOP2,bottom:BOT},theme:'plain',styles:{fontSize:9.5,cellPadding:3,textColor:[21,33,58]},columnStyles:{0:{textColor:[90,104,126],cellWidth:190},1:{fontStyle:'bold'}},body:b.items.map(([k,v])=>[txt(k),txt(v)])});y=doc.lastAutoTable.finalY+14;continue}
     if(b.type==='table'){
       if(!b.rows.length){doc.setFont('helvetica','normal');doc.setFontSize(9.5);doc.setTextColor(90,104,126);y+=12;doc.text(txt(b.empty||'Nothing to show.'),mx,y);y+=16;continue}
       const cst={};(b.num||[]).forEach(i=>cst[i]={halign:'right'});
-      doc.autoTable({startY:y,margin:{left:mx,right:mx},theme:'striped',styles:{fontSize:8.5,cellPadding:4,textColor:[21,33,58]},headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold'},footStyles:{fillColor:[235,239,246],textColor:[21,33,58],fontStyle:'bold'},
+      doc.autoTable({startY:y,margin:{left:mx,right:mx,top:TOP2,bottom:BOT},theme:'striped',styles:{fontSize:8.5,cellPadding:4,textColor:[21,33,58]},headStyles:{fillColor:NAVY,textColor:255,fontStyle:'bold'},footStyles:{fillColor:[235,239,246],textColor:[21,33,58],fontStyle:'bold'},
         columnStyles:cst,head:[b.cols.map(txt)],body:b.rows.map(r=>r.map(txt)),foot:b.foot?[b.foot.map(txt)]:undefined,
         didParseCell:d=>{if((b.num||[]).includes(d.column.index))d.cell.styles.halign='right'}});
       y=doc.lastAutoTable.finalY+16;continue}
@@ -1400,8 +1410,53 @@ async function buildPdf(M){
       b.list.forEach((m,i)=>{const h=m[1]/max*ch,x=x0+i*bw+bw*.18;doc.rect(x,base-h,bw*.64,h,'F');if(i%Math.ceil(b.list.length/8)===0){const [yy,mm]=m[0].split('-');doc.text(new Date(+yy,+mm-1,1).toLocaleDateString('en-AU',{month:'short'})+' '+yy.slice(2),x+bw*.32,base+11,{align:'center'})}});
       y=base+24;continue}
   }
-  const n=doc.getNumberOfPages();for(let i=1;i<=n;i++){doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(140,150,165);doc.text(txt(M.title),mx,H-24);doc.text(`Page ${i} of ${n}`,W-mx,H-24,{align:'right'})}
+  const n=doc.getNumberOfPages();if(LH){doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(60,75,90);for(let i=2;i<=n;i++){doc.setPage(i);doc.text(`${i} of ${n}`,LH.pageX,LH.pageY)}}else {for(let i=1;i<=n;i++){doc.setPage(i);doc.setFont('helvetica','normal');doc.setFontSize(8);doc.setTextColor(140,150,165);doc.text(txt(M.title),mx,H-24);doc.text(`Page ${i} of ${n}`,W-mx,H-24,{align:'right'})}}
   return doc.output('arraybuffer');
+}
+async function buildLetter(c,L){
+  await loadPdfLib();
+  const {jsPDF}=window.jspdf,doc=new jsPDF({unit:'pt',format:'a4'}),W=doc.internal.pageSize.getWidth(),H=doc.internal.pageSize.getHeight(),mx=56;
+  const LH=await letterheadFor(c.id);const TOP2=LH?LH.top2:60,BOT=LH?LH.bottom:60;let y=LH?LH.top1+6:70;
+  const txt=s=>String(s||'').replace(/[^\x20-\x7E -ÿ\n]/g,ch=>ch==='—'||ch==='–'?'-':ch==='’'?"'":ch==='“'||ch==='”'?'"':'');
+  if(LH)useLetterhead(doc,LH,W,H);else{doc.setFont('times','normal');doc.setFontSize(20);doc.text(txt(c.name),mx,y);y+=30}
+  const line=(t,o={})=>{doc.setFont('helvetica',o.bold?'bold':'normal');doc.setFontSize(o.size||10.5);doc.setTextColor(25,35,50);
+    doc.splitTextToSize(txt(t),W-2*mx).forEach(l=>{if(y>H-BOT-14){doc.addPage();y=TOP2}doc.text(l,mx,y);y+=o.lh||15})};
+  line(fd(L.date));y+=10;
+  [L.toName,...String(L.toAddress||'').split('\n')].filter(x=>x&&x.trim()).forEach(x=>line(x));y+=12;
+  line(`Dear ${L.salutation||L.toName||'Sir/Madam'},`);y+=6;
+  if(L.subject){line('Re: '+L.subject,{bold:true});y+=6}
+  String(L.body||'').split(/\n/).forEach(p=>{if(!p.trim()){y+=8;return}line(p)});
+  y+=14;line('Yours sincerely,');y+=34;line(L.signName||'',{bold:true});if(L.signTitle)line(L.signTitle);line(c.name.toUpperCase().includes('PTY')?c.name:c.name+' PTY LTD');
+  const n=doc.getNumberOfPages();if(LH&&n>1){doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(60,75,90);for(let i=2;i<=n;i++){doc.setPage(i);doc.text(`${i} of ${n}`,LH.pageX,LH.pageY)}}
+  return doc.output('arraybuffer');
+}
+function formLetter(){
+  const c=C(),people=c.shareholders.filter(p=>p.name);
+  const fields=[
+    {id:'to',label:'To',type:'select',options:[...people.map(p=>[p.id,`${p.name} (Share ${p.share})`]),['other','Someone else']],value:people[0]?people[0].id:'other'},
+    {id:'toName',label:'Name',half:1,showIf:v=>v.to==='other'},
+    {id:'toEmail',label:'Email',type:'email',half:1,showIf:v=>v.to==='other'},
+    {id:'toAddress',label:'Address (optional)',type:'textarea',rows:2},
+    {id:'date',label:'Date',type:'date',value:iso(today()),half:1},
+    {id:'salutation',label:'Dear…',half:1,placeholder:'Leave blank to use their name'},
+    {id:'subject',label:'Subject',required:1},
+    {id:'body',label:'Letter',type:'textarea',rows:9,required:1},
+    {id:'signName',label:'Signed by',half:1,value:(()=>{try{return localStorage.getItem('pbk-sign-'+c.id)||''}catch(e){return ''}})()},
+    {id:'signTitle',label:'Title',half:1,value:(()=>{try{return localStorage.getItem('pbk-signt-'+c.id)||'Director'}catch(e){return 'Director'}})()}
+  ];
+  const collect=f=>{const {vals,err}=readForm(f,fields);if(err){$('#ferr').textContent=err;return null}const p=people.find(x=>x.id===vals.to);
+    try{localStorage.setItem('pbk-sign-'+c.id,vals.signName);localStorage.setItem('pbk-signt-'+c.id,vals.signTitle)}catch(e){}
+    return {...vals,toName:p?p.name:vals.toName,toEmail:p?p.email:vals.toEmail}};
+  const fname=L=>`${c.name} letter ${L.subject}`.replace(/[^\w\- ]+/g,'').replace(/\s+/g,' ').trim().slice(0,80)+'.pdf';
+  openForm({title:`Letter · ${c.name}`,saveLabel:'Download PDF',fields,
+    extraBtn:{label:'Email PDF',onClick:async f=>{const L=collect(f);if(!L)return;if(!L.toEmail){$('#ferr').textContent='This person has no email address.';return}
+      toast('Making the letter…');try{const buf=await buildLetter(c,L);let bin='';const u=new Uint8Array(buf);for(let i=0;i<u.length;i+=32768)bin+=String.fromCharCode.apply(null,u.subarray(i,i+32768));
+        const res=await api('sendEmail',{id:c.id,emails:[{to:L.toEmail,subject:L.subject+' · '+c.name,body:`Dear ${L.salutation||L.toName},\n\nPlease find attached our letter regarding ${L.subject}.\n\nKind regards,\n${L.signName||c.name}`}],attachment:{name:fname(L),mime:'application/pdf',base64:btoa(bin)}});
+        if(res.ok){c.messages.push({id:uid(),date:iso(today()),subject:'Letter: '+L.subject,body:L.body,audience:'all',channels:['email'],emailed:res.sent,recipients:[{name:L.toName,email:L.toEmail,text:L.body,missing:[]}],source:'letter'});closeModal();commit();toast(`Letter emailed to ${L.toName}`)}else toast('Email failed: '+res.error)}
+      catch(e){toast('Could not send the letter.')}}},
+    onSave:v=>{const f=$('#form');const L=collect(f);if(!L)return 'Check the form.';(async()=>{try{const buf=await buildLetter(c,L);const file=new File([buf],fname(L),{type:'application/pdf'});
+        if(navigator.canShare&&navigator.canShare({files:[file]})&&/iPhone|iPad|Android/i.test(navigator.userAgent)){try{await navigator.share({files:[file],title:fname(L)})}catch(e){}return}
+        const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast('Letter saved')}catch(e){toast('Could not make the letter.')}})()}});
 }
 async function emailReport(list){
   const M=reportModel(),c=C();
@@ -1453,7 +1508,7 @@ function readHash(){const [c,s]=(location.hash.slice(1)||'').split('-');if(state
 /* ---------- light / dark / auto ---------- */
 let modePref='auto';try{modePref=localStorage.getItem('pbk-mode')||'auto'}catch(e){}
 const mq=window.matchMedia?matchMedia('(prefers-color-scheme: dark)'):null;
-function applyMode(){const m=modePref==='auto'?(mq&&mq.matches?'dark':'light'):modePref;const ch=document.body.dataset.mode!==m;document.body.dataset.mode=m;if(ch&&typeof render==='function'&&loaded!==undefined)try{render()}catch(e){}}
+function applyMode(){const m=modePref==='auto'?(mq&&mq.matches?'dark':'light'):modePref;const ch=document.body.dataset.mode!==m;document.body.dataset.mode=m;if(ch&&typeof loaded!=='undefined'&&loaded)try{render()}catch(e){}}
 if(mq&&mq.addEventListener)mq.addEventListener('change',()=>{if(modePref==='auto')applyMode()});
 function setMode(m){modePref=m;try{localStorage.setItem('pbk-mode',m)}catch(e){}applyMode();document.querySelectorAll('.modes button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.mode===m))}
 applyMode();
@@ -1882,7 +1937,7 @@ function openStageList(){const c=C();listModal('Construction stages',c.stages.ma
 
 /* ---------- events ---------- */
 const ACTIONS={
-  'close':()=>{closeModal();goBack()},'undo':undo,'del':d=>delItem(d.kind,d.id),'signout':signOut,
+  'close':()=>{closeModal();goBack()},'letter':formLetter,'undo':undo,'del':d=>delItem(d.kind,d.id),'signout':signOut,
   'rep-email':d=>emailReport([{to:d.to,name:d.who}]),
   'rep-email-all':()=>emailReport(rRecipients().filter(p=>p.email).map(p=>({to:p.email,name:p.name}))),'subtab':d=>{if(d.key==='mortgage')mTab=d.tab;else if(d.key==='outgoings')oTab=d.tab;render()},'add-person':()=>formPerson(),
   'set-setup':()=>child(openSettings,formSetup),'set-company':()=>child(openSettings,formCompany),'set-land':()=>child(openSettings,formLand),'set-loan':()=>child(openSettings,formLoan),
