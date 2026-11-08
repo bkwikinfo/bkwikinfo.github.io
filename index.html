@@ -943,6 +943,23 @@ body[data-mode="dark"] .shk b{color:var(--third)}body[data-mode="dark"] .shk.war
 .shsub{margin:-4px 0 12px;font-size:13px;color:var(--muted)}
 .shsec{margin-top:12px}.shsec .btn{margin-top:8px;width:100%}
 .member small{opacity:.75}
+/* monthly payments */
+.stbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.mnav{display:flex;align-items:center;gap:6px}.mnav h2{min-width:150px;text-align:center;margin:0}
+.mnav .icon-btn{font-size:22px;width:36px;height:36px}
+.stsum{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:12px 0}
+.sts{padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--glass) 40%,transparent);border:1px solid color-mix(in srgb,var(--glass) 70%,transparent)}
+.sts b{display:block;font-size:18px;color:var(--navy)}.sts small{font-size:12px;color:var(--muted)}
+.sts.ok b{color:#2e7d5b}.sts.warn b{color:#b5632a}.sts.bad b{color:#b33a3a}.sts.info b{color:#2f6db5}
+body[data-mode="dark"] .sts b{color:var(--third)}body[data-mode="dark"] .sts.ok b{color:#7fd6a8}body[data-mode="dark"] .sts.warn b{color:#f0a36b}body[data-mode="dark"] .sts.bad b{color:#f08a8a}body[data-mode="dark"] .sts.info b{color:#8db8f0}
+.chip.ok{background:#dff3e8;color:#226b4a}.chip.info{background:#e1ecfb;color:#2a5d9e}
+body[data-mode="dark"] .chip.ok{background:rgba(127,214,168,.18);color:#9ee6bf}body[data-mode="dark"] .chip.info{background:rgba(141,184,240,.18);color:#b3d0f7}
+td small.bad-t,td small.ok-t{display:block;font-size:11.5px;font-weight:600}.bad-t{color:#b33a3a}.ok-t{color:#2e7d5b}
+body[data-mode="dark"] .bad-t{color:#f08a8a}body[data-mode="dark"] .ok-t{color:#7fd6a8}
+.stmsg{white-space:pre-wrap;font:13px/1.5 "IBM Plex Sans",system-ui,sans-serif;padding:12px;border-radius:12px;background:color-mix(in srgb,var(--glass) 45%,transparent);border:1px solid color-mix(in srgb,var(--glass) 70%,transparent);margin:6px 0 10px;max-height:240px;overflow:auto;color:var(--ink)}
+.stsend{display:flex;flex-wrap:wrap;gap:8px}.stsend .btn{flex:1 1 auto;text-align:center}
+@media (max-width:860px){.stsum{grid-template-columns:repeat(4,1fr)}.stsum .sts:last-child{grid-column:1/-1}.sts{padding:8px}.sts b{font-size:16px}.sts small{font-size:11px}
+  .stbar .btn{width:100%}.mnav{width:100%;justify-content:space-between}}
 @media (prefers-reduced-motion:reduce){.view.enter > *{animation:none}.sk{animation:none}}
 @media (prefers-reduced-motion:reduce){.sp-logo,.sp-logo img,.sp-name span,.sp-line,.sp-sub{animation-duration:.01s!important;animation-delay:0s!important}.sp-line{width:180px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -1049,7 +1066,7 @@ const byDate=(a,b)=>(a.date||'')<(b.date||'')?-1:(a.date||'')>(b.date||'')?1:0;
 function addMonths(d,n,day){const t=new Date(d.getFullYear(),d.getMonth()+n,1);const dim=new Date(t.getFullYear(),t.getMonth()+1,0).getDate();t.setDate(Math.min(day??d.getDate(),dim));return t}
 function addFreq(s,f){const d=pd(s)||today();switch(f){case 'weekly':d.setDate(d.getDate()+7);return iso(d);case 'fortnightly':d.setDate(d.getDate()+14);return iso(d);case 'monthly':return iso(addMonths(d,1));case 'quarterly':return iso(addMonths(d,3));case 'yearly':return iso(addMonths(d,12));default:return ''}}
 const freqLabel=f=>(FREQS.find(x=>x[0]===f)||['','—'])[1];
-const audLabel=a=>(AUDIENCES.find(x=>x[0]===a)||['','All shareholders'])[1];
+const audLabel=a=>a==='statements'?'Individual payment summaries':(AUDIENCES.find(x=>x[0]===a)||['','All shareholders'])[1];
 const chLabel=c=>(CHANNELS.find(x=>x[0]===c)||['',c])[1];
 
 /* ---------- state ---------- */
@@ -1329,12 +1346,15 @@ function shareCard(c,s){const ms=c.shareholders.filter(p=>p.share===s);
     return `<section class="card share"><h3>Share ${s}<span>25%</span></h3><div class="mlist">
     ${ms.map(p=>{const miss=['email','mobile','whatsapp'].filter(k=>!p[k]);return `<button class="member" data-act="share-open" data-n="${s}" data-pid="${p.id}"><div><b>${esc(p.name)}</b><small>Tap for payments</small></div></button>`}).join('')||'<div class="empty">No one in this share</div>'}</div></section>`}
 function subtabsHtml(name,curTab,tabs){return `<div class="subtabs" role="tablist" aria-label="${name}">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${curTab===k}" data-act="subtab" data-key="${name}" data-tab="${k}">${l}</button>`).join('')}</div>`}
+let hTab='shares',stMonth=null;
 function vHolders(c){
+  if(hTab==='monthly')return vMonthly(c);
   const T=totals(c);
   const list=[...c.contributions].sort(byDate).reverse().filter(x=>personFilter==='all'||shareOf(c,x)===Number(personFilter));
   return `
   <div class="pagehead"><div><h1>Shareholders</h1></div>
     </div>
+  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments']])}
   <div class="vscroll">
   <div class="v-overview sharehost"><div class="shares">${[1,2,3,4].map(n=>shareCard(c,n)).join('')}</div></div>
   <section class="card"><header class="ch"><h2>Paid in by share</h2></header>
@@ -1681,7 +1701,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.08.18';
+const APP_VERSION='2026.11.09.1';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -2327,6 +2347,80 @@ function openShare(n,tab,pid){n=Number(n);if(tab)shTab=tab;if(pid!=null)shPid=pi
       ${together?`<p class="muted small" style="margin-top:6px">Also ${m2(together)} paid by Share ${n} as a whole, not under one name.</p>`:''}
       <button type="button" class="btn gold" data-act="sh-add-pay" data-n="${n}">Add ${cat.toLowerCase()} payment</button></div>`}]});
 }
+
+/* ---------- monthly statements per person ---------- */
+const ST_LABEL={paid:'Paid',partial:'Partly paid',none:'Not paid',extra:'Extra paid',noplan:'No monthly amount'};
+const ST_CHIP={paid:'ok',partial:'warn',none:'bad',extra:'info',noplan:''};
+function ymOf(d){return d?d.slice(0,7):''}
+function mRange(ym){const [y,m]=ym.split('-').map(Number);const f=`${ym}-01`,l=iso(new Date(y,m,0));return [f,l]}
+function addYm(ym,k){const [y,m]=ym.split('-').map(Number);const d=new Date(y,m-1+k,1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function ymLabel(ym){const [y,m]=ym.split('-').map(Number);return new Date(y,m-1,1).toLocaleDateString('en-AU',{month:'long',year:'numeric'})}
+function pPlans(c,p){const single=c.shareholders.filter(q=>q.share===p.share).length===1;return c.plans.filter(x=>Number(x.shareId)===p.share&&(x.personId===p.id||(!x.personId&&single)))}
+function pPays(c,p){const single=c.shareholders.filter(q=>q.share===p.share).length===1;return c.contributions.filter(x=>shareOf(c,x)===p.share&&(x.personId===p.id||(!x.personId&&single)))}
+function planDue(x,ym){const [f,l]=mRange(ym);return (!x.from||x.from<=l)&&(!x.until||x.until>=f)?num(x.amount):0}
+function stOf(due,paid){return due<=0.005&&paid<=0.005?'noplan':paid<=0.005?'none':paid<due-0.005?'partial':paid>due+0.005?'extra':'paid'}
+function statement(c,p,ym){
+  const plans=pPlans(c,p),pays=pPays(c,p),[f,l]=mRange(ym);
+  const rows=SH_CATS.map(cat=>{const pl=plans.filter(x=>x.cat===cat);const due=sum(pl,x=>planDue(x,ym));const paid=sum(pays.filter(x=>catOf(x)===cat&&x.date>=f&&x.date<=l),x=>x.amount);
+    const day=pl.find(x=>planDue(x,ym))?.day||null;return {cat,due,paid,day,st:stOf(due,paid)}}).filter(r=>r.due>0||r.paid>0);
+  // earlier months: only categories with a plan, from that plan's first month
+  let earlier=0;SH_CATS.forEach(cat=>{const pl=plans.filter(x=>x.cat===cat);if(!pl.length)return;const start=pl.map(x=>ymOf(x.from)||ym).sort()[0];
+    for(let k=start;k<ym;k=addYm(k,1)){earlier+=sum(pl,x=>planDue(x,k))-sum(pays.filter(x=>catOf(x)===cat&&ymOf(x.date)===k),x=>x.amount)}});
+  const due=sum(rows,r=>r.due),paid=sum(rows,r=>r.paid);
+  return {p,rows,due,paid,diff:paid-due,earlier,st:stOf(due,paid)};
+}
+function stText(c,S,ym){const p=S.p,fmt=v=>m2(Math.abs(v));
+  const lines=[`Hi ${p.name},`,'',`Here is your ${c.name} payment summary for ${ymLabel(ym)} (Share ${p.share}).`,''];
+  S.rows.forEach(r=>lines.push(`${r.cat}: due ${m2(r.due)}${r.day?' (on the '+r.day+(['th','st','nd','rd'][(r.day%100-20)%10]||['th','st','nd','rd'][r.day%100]||'th')+')':''}, paid ${m2(r.paid)} – ${ST_LABEL[r.st]}`));
+  if(!S.rows.length)lines.push('No monthly payment is set for you this month.');
+  lines.push('',`Total due: ${m2(S.due)}`,`Total paid: ${m2(S.paid)}`);
+  if(S.diff<-0.005)lines.push(`Still to pay this month: ${fmt(S.diff)}`);else if(S.diff>0.005)lines.push(`Extra paid this month: ${fmt(S.diff)}`);else if(S.due>0)lines.push('This month is fully paid. Thank you.');
+  if(S.earlier>0.005)lines.push(`Still owing from earlier months: ${fmt(S.earlier)}`);else if(S.earlier<-0.005)lines.push(`Paid ahead from earlier months: ${fmt(S.earlier)}`);
+  lines.push('','This summary is just for you.','',`Kind regards,`,c.name);return lines.join('\n')}
+function vMonthly(c){if(!stMonth)stMonth=ymOf(iso(today()));const ym=stMonth;
+  const list=[...c.shareholders].sort((a,b)=>a.share-b.share||String(a.name).localeCompare(b.name)).map(p=>statement(c,p,ym));
+  const cnt=k=>list.filter(S=>S.st===k).length;
+  const sub=(S)=>S.earlier>0.005?`<small class="bad-t">+${m2(S.earlier)} from earlier</small>`:S.earlier<-0.005?`<small class="ok-t">${m2(-S.earlier)} ahead</small>`:'';
+  return `<div class="pagehead"><div><h1>Shareholders</h1></div></div>
+  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments']])}
+  <div class="vscroll">
+  <section class="card"><header class="ch stbar"><div class="mnav"><button class="icon-btn" data-act="st-month" data-k="-1" aria-label="Previous month">‹</button><h2>${ymLabel(ym)}</h2><button class="icon-btn" data-act="st-month" data-k="1" aria-label="Next month">›</button></div>
+    <button class="btn gold" data-act="st-send-all">Send to everyone</button></header>
+    <div class="stsum">${['paid','partial','none','extra'].map(k=>`<div class="sts ${ST_CHIP[k]}"><b>${cnt(k)}</b><small>${ST_LABEL[k]}</small></div>`).join('')}
+      <div class="sts"><b>${m2(sum(list,S=>S.paid))}</b><small>Paid of ${m2(sum(list,S=>S.due))}</small></div></div>
+    ${table([{l:'Shareholder'},{l:'Share'},{l:'Due',n:1},{l:'Paid',n:1},{l:'Status'}],
+      list.map(S=>({act:'st-open',id:S.p.id,cells:[`<b>${esc(S.p.name)}</b>${sub(S)}`,'Share '+S.p.share,m2(S.due),m2(S.paid),`<span class="chip ${ST_CHIP[S.st]}">${ST_LABEL[S.st]}${S.st==='partial'?' · '+m2(S.due-S.paid)+' left':S.st==='extra'?' · +'+m2(S.paid-S.due):''}</span>`]})),
+      {empty:'Add shareholders on the Setup page first.',foot:['Total','',m2(sum(list,S=>S.due)),m2(sum(list,S=>S.paid)),'']})}
+    <p class="muted small" style="margin-top:10px">Set each person's monthly amounts by tapping their name on the Shares tab. Each message only shows that person's own amounts.</p>
+  </section></div>`;
+}
+function openStatement(pid){const c=C(),p=c.shareholders.find(x=>x.id===pid);if(!p)return;const ym=stMonth||ymOf(iso(today()));const S=statement(c,p,ym),txt=stText(c,S,ym);
+  const w=waNum(p.whatsapp||p.mobile);
+  openForm({title:`${p.name} · ${ymLabel(ym)}`,noSave:1,noFocus:1,fields:[{id:'st',type:'html',html:`
+    <p class="shsub">Share ${p.share} · <span class="chip ${ST_CHIP[S.st]}">${ST_LABEL[S.st]}</span></p>
+    ${table([{l:'For'},{l:'Due',n:1},{l:'Paid',n:1},{l:'Status'}],S.rows.map(r=>({cells:[r.cat,m2(r.due),m2(r.paid),`<span class="chip ${ST_CHIP[r.st]}">${ST_LABEL[r.st]}</span>`]})),{empty:'No monthly amount set and nothing paid this month.',foot:S.rows.length?['Total',m2(S.due),m2(S.paid),'']:null})}
+    <p class="setlabel" style="margin-top:12px">Message ${p.name} will get</p>
+    <pre class="stmsg">${esc(txt)}</pre>
+    <div class="stsend">
+      <button type="button" class="btn gold" data-act="st-email" data-id="${p.id}"${p.email?'':' disabled'}>${p.email?'Email '+esc(p.email):'No email saved'}</button>
+      ${w?`<a class="btn" href="https://wa.me/${w}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">WhatsApp</a>`:''}
+      ${p.mobile?`<a class="btn" href="sms:${encodeURIComponent(String(p.mobile).replace(/\s/g,''))}?&body=${encodeURIComponent(txt)}">SMS</a>`:''}
+      <button type="button" class="btn" data-act="st-copy" data-id="${p.id}">Copy</button></div>`}]});
+}
+function stSend(c,people,channels){const ym=stMonth;
+  const recips=people.map(p=>{const S=statement(c,p,ym);const missing=channels.filter(ch=>ch==='email'?!p.email:ch==='sms'?!p.mobile:!(p.whatsapp||p.mobile));
+    return {personId:p.id,name:p.name,email:p.email,mobile:p.mobile,whatsapp:p.whatsapp||p.mobile,missing,text:stText(c,S,ym)}});
+  const msg={id:uid(),date:iso(today()),subject:`Your payment summary for ${ymLabel(ym)}`,body:'Individual monthly payment summary',audience:'statements',channels,recipients:recips,source:'statement'};
+  c.messages.push(msg);commit();deliver(c,msg)}
+function formSendAll(){const c=C(),ym=stMonth;
+  const all=c.shareholders.map(p=>({p,S:statement(c,p,ym)}));
+  const fields=[{id:'who',label:'Send to',type:'select',options:[['owing','Only people not fully paid'],['plan','Everyone with a monthly amount'],['all','Every shareholder']],value:'plan'},
+    {id:'channels',label:'Send by',type:'checks',options:CHANNELS,value:['email']},{id:'pv',type:'html',html:''}];
+  const pick=v=>all.filter(x=>v.who==='all'||(v.who==='plan'?x.S.due>0:x.S.st==='none'||x.S.st==='partial')).map(x=>x.p);
+  openForm({title:`Send ${ymLabel(ym)} summaries`,saveLabel:'Send',fields,intro:'Each person gets a separate message with only their own amounts.',
+    onInput:f=>{const {vals}=readForm(f,fields);const ps=pick(vals);$('#f_pv').innerHTML=`<p class="muted small">${ps.length} ${ps.length===1?'person':'people'}: ${esc(ps.map(p=>p.name).join(', ')||'nobody')}${vals.channels.includes('email')&&ps.some(p=>!p.email)?` · no email for ${esc(ps.filter(p=>!p.email).map(p=>p.name).join(', '))}`:''}</p>`},
+    onSave:v=>{if(!v.channels.length)return 'Choose at least one way to send.';const ps=pick(v);if(!ps.length)return 'Nobody matches. Pick a different Send to option.';stSend(c,ps,v.channels)}});
+}
 function formPlan(n,id){const c=C(),x=c.plans.find(p=>p.id===id);n=x?Number(x.shareId):Number(n);const cat=x?x.cat:shTab,pid=x?(x.personId||''):shPid,who=(c.shareholders.find(p=>p.id===pid)||{}).name;
   openForm({title:`${x?'Edit':'Set'} monthly ${cat.toLowerCase()} · ${who||'Share '+n}`,done:'Monthly contribution saved',fields:[
     {id:'amount',label:'Amount each month ($)',type:'number',value:x?.amount,half:1,required:1},
@@ -2372,13 +2466,17 @@ function openStageList(){const c=C();listModal('Construction stages',c.stages.ma
 
 /* ---------- events ---------- */
 const fromSetup=fn=>{navStack=[];fn()};
+const ST_ACTIONS={'st-month':d=>{stMonth=addYm(stMonth||ymOf(iso(today())),Number(d.k));render()},'st-open':d=>{navStack=[];openStatement(d.id)},'st-send-all':()=>{navStack=[];formSendAll()},
+  'st-email':d=>{const c=C(),p=c.shareholders.find(x=>x.id===d.id);if(p){closeModal();navStack=[];stSend(c,[p],['email'])}},
+  'st-copy':d=>{const c=C(),p=c.shareholders.find(x=>x.id===d.id);const t=stText(c,statement(c,p,stMonth),stMonth);try{navigator.clipboard.writeText(t).then(()=>toast('Copied'),()=>toast('Copy was blocked'))}catch(e){toast('Copy was blocked')}}};
 const ACTIONS={
+  ...ST_ACTIONS,
   'close':()=>{closeModal();goBack()},
   'go-setup':()=>{navStack=[];formSetup()},'go-land':()=>{navStack=[];formLand()},'go-people':()=>{sec='holders';render()},
   'cal-prev':()=>{const [y,m]=calMonth;calMonth=m?[y,m-1]:[y-1,11];render()},'cal-next':()=>{const [y,m]=calMonth;calMonth=m<11?[y,m+1]:[y+1,0];render()},
   'fab':openQuickAdd,'search':openSearch,'search-go':d=>searchGo(d),'letter':formLetter,'undo':undo,'del':d=>delItem(d.kind,d.id),'signout':signOut,
   'rep-email':d=>emailReport([{to:d.to,name:d.who}]),
-  'rep-email-all':()=>emailReport(rRecipients().filter(p=>p.email).map(p=>({to:p.email,name:p.name}))),'subtab':d=>{if(d.key==='mortgage')mTab=d.tab;else if(d.key==='outgoings')oTab=d.tab;render()},'add-person':()=>formPerson(),
+  'rep-email-all':()=>emailReport(rRecipients().filter(p=>p.email).map(p=>({to:p.email,name:p.name}))),'subtab':d=>{if(d.key==='holders')hTab=d.tab;else if(d.key==='mortgage')mTab=d.tab;else if(d.key==='outgoings')oTab=d.tab;render()},'add-person':()=>formPerson(),
   'set-setup':()=>fromSetup(formSetup),'set-company':()=>fromSetup(formCompany),'set-land':()=>fromSetup(formLand),'set-loan':()=>fromSetup(formLoan),
   'set-rates':()=>fromSetup(openRateList),'set-people':()=>fromSetup(openPeopleList),'set-stages':()=>fromSetup(openStageList),'set-clear':()=>fromSetup(clearSample),
   'share-open':d=>{navStack=[];openShare(d.n,'Deposit',d.pid||'')},'sh-tab':d=>openShare(d.n,d.tab),'sh-add-pay':d=>{const pid=shPid,who=(C().shareholders.find(p=>p.id===pid)||{}).name;child(()=>openShare(d.n,null,pid),()=>formContrib(null,{shareId:Number(d.n),type:shTab,personId:pid,who}))},'sh-pay':d=>{const x=C().contributions.find(q=>q.id===d.id);const n=x?shareOf(C(),x):1,pid=shPid;child(()=>openShare(n,null,pid),()=>formContrib(d.id))},'sh-add-plan':d=>{const pid=shPid;child(()=>openShare(d.n,null,pid),()=>formPlan(d.n))},'sh-plan':d=>{const x=C().plans.find(q=>q.id===d.id),pid=shPid;child(()=>openShare(x?x.shareId:1,null,pid),()=>formPlan(null,d.id))},
