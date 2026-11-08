@@ -940,6 +940,7 @@ body[data-mode="dark"] .setrow .sr-ic{color:var(--third)}
 .shk.warn b{color:#b5632a}.shk.ok b{color:#2e7d5b}
 body[data-mode="dark"] .shk b{color:var(--third)}body[data-mode="dark"] .shk.warn b{color:#f0a36b}body[data-mode="dark"] .shk.ok b{color:#7fd6a8}
 @media (max-width:600px){.shkpis{grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px}.shk{padding:8px 10px}.shk small{font-size:11px}.shk b{font-size:15px}.shk em{font-size:11px}}
+.shsub{margin:-4px 0 12px;font-size:13px;color:var(--muted)}
 .shsec{margin-top:12px}.shsec .btn{margin-top:8px;width:100%}
 .member small{opacity:.75}
 @media (prefers-reduced-motion:reduce){.view.enter > *{animation:none}.sk{animation:none}}
@@ -1003,11 +1004,11 @@ const ICONS={
 };
 const SECTIONS=[
   {id:'overview',label:'Dashboard'},
-  {id:'setup',label:'Setup'},
   {id:'holders',label:'Shareholders'},
   {id:'mortgage',label:'Mortgage'},
   {id:'outgoings',label:'Outgoings'},
-  {id:'reports',label:'Reports'}
+  {id:'reports',label:'Reports'},
+  {id:'setup',label:'Setup'}
 ];
 const UTIL_TYPES=['Electricity','Gas','Water','Sewerage','Council rates','Land tax','Emergency services levy','Fire services levy','Stormwater','Trade waste','Waste and rubbish','Internet','Phone','Insurance','Strata / body corporate','Security and alarm','Pest control','Cleaning','Maintenance and repairs','Landscaping and gardening'];
 const LEGACY_UTIL=new Set(['Council rates','Water','Land tax','Insurance']);
@@ -1182,7 +1183,7 @@ function table(cols,rows,opts={}){
   const canDel=rows.some(r=>r.act&&DEL_KIND[r.act]);
   if(canDel){cols=[...cols,{l:'',del:1}];rows=rows.map(r=>({...r,cells:[...r.cells,r.act&&DEL_KIND[r.act]?`<button class="delbtn" data-act="del" data-kind="${DEL_KIND[r.act]}" data-id="${esc(r.id)}" aria-label="Delete" title="Delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg></button>`:'']}));if(opts.foot)opts={...opts,foot:[...opts.foot,'']}}
   const cell=(v,i)=>`<td data-label="${esc(cols[i].l)}" class="${cols[i].n?'n':''}${cols[i].full?' full':''}${cols[i].del?' delcell':''}">${v}</td>`;
-  return `<div class="tw"><table class="rt"><thead><tr>${cols.map(c=>`<th class="${c.n?'n':''}">${c.l}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr${r.act?` class="click" data-act="${r.act}" data-id="${esc(r.id||'')}"${r.n?` data-n="${r.n}"`:''} tabindex="0"`:''}>${r.cells.map(cell).join('')}</tr>`).join('')}</tbody>${opts.foot?`<tfoot><tr>${opts.foot.map(cell).join('')}</tr></tfoot>`:''}</table></div>`;
+  return `<div class="tw"><table class="rt"><thead><tr>${cols.map(c=>`<th class="${c.n?'n':''}">${c.l}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr${r.act?` class="click" data-act="${r.act}" data-id="${esc(r.id||'')}"${r.n?` data-n="${r.n}" data-pid="${esc(r.id||'')}"`:''} tabindex="0"`:''}>${r.cells.map(cell).join('')}</tr>`).join('')}</tbody>${opts.foot?`<tfoot><tr>${opts.foot.map(cell).join('')}</tr></tfoot>`:''}</table></div>`;
 }
 function datebox(d){return `<div class="datebox"><b>${d.getDate()}</b><small>${d.toLocaleDateString('en-AU',{month:'short'})}</small></div>`}
 function fmtAbn(a){const d=String(a).replace(/\D/g,'');return d.length===11?`${d.slice(0,2)} ${d.slice(2,5)} ${d.slice(5,8)} ${d.slice(8)}`:String(a)}
@@ -1326,7 +1327,7 @@ function upcoming(c,due,L){
 
 function shareCard(c,s){const ms=c.shareholders.filter(p=>p.share===s);
     return `<section class="card share"><h3>Share ${s}<span>25%</span></h3><div class="mlist">
-    ${ms.map(p=>{const miss=['email','mobile','whatsapp'].filter(k=>!p[k]);return `<button class="member" data-act="share-open" data-n="${s}"><div><b>${esc(p.name)}</b><small>Tap for payments</small></div></button>`}).join('')||'<div class="empty">No one in this share</div>'}</div></section>`}
+    ${ms.map(p=>{const miss=['email','mobile','whatsapp'].filter(k=>!p[k]);return `<button class="member" data-act="share-open" data-n="${s}" data-pid="${p.id}"><div><b>${esc(p.name)}</b><small>Tap for payments</small></div></button>`}).join('')||'<div class="empty">No one in this share</div>'}</div></section>`}
 function subtabsHtml(name,curTab,tabs){return `<div class="subtabs" role="tablist" aria-label="${name}">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${curTab===k}" data-act="subtab" data-key="${name}" data-tab="${k}">${l}</button>`).join('')}</div>`}
 function vHolders(c){
   const T=totals(c);
@@ -1338,13 +1339,13 @@ function vHolders(c){
   <div class="v-overview sharehost"><div class="shares">${[1,2,3,4].map(n=>shareCard(c,n)).join('')}</div></div>
   <section class="card"><header class="ch"><h2>Paid in by share</h2></header>
     ${table([{l:'Share'},{l:'Members',full:1},{l:'Ownership',n:1},{l:'Monthly',n:1},{l:'Paid in',n:1}],
-      T.shares.map(x=>({act:'share-open',n:x.n,cells:[`<b>Share ${x.n}</b>`,x.members.map(p=>esc(p.name)).join(', ')||'—','25%',m2(planMonthly(c,x.n)),m2(x.paid)]})),
+      T.shares.map(x=>({act:x.members.length===1?'share-open':'',n:x.n,id:x.members.length===1?x.members[0].id:'',cells:[`<b>Share ${x.n}</b>`,x.members.map(p=>esc(p.name)).join(', ')||'—','25%',m2(planMonthly(c,x.n)),m2(x.paid)]})),
       {foot:['Total','','100%',m2(sum([1,2,3,4],n=>planMonthly(c,n))),m2(T.contribTotal)]})}
   </section>
   <section class="card"><header class="ch"><h2>Payments in</h2>
     <select id="pfilter" aria-label="Filter by share" style="width:auto"><option value="all">All shares</option>${[1,2,3,4].map(n=>`<option value="${n}"${String(personFilter)===String(n)?' selected':''}>Share ${n}</option>`).join('')}</select></header>
     ${table([{l:'Date'},{l:'Share'},{l:'Type'},{l:'Amount',n:1},{l:'Note',full:1}],
-      list.map(x=>({act:'edit-contrib',id:x.id,cells:[fd(x.date),'Share '+shareOf(c,x),esc(x.type),m2(x.amount),`<span class="muted">${esc(x.note)}</span>`]})),
+      list.map(x=>({act:'edit-contrib',id:x.id,cells:[fd(x.date),'Share '+shareOf(c,x)+((c.shareholders.find(p=>p.id===x.personId)||{}).name?' · '+esc(c.shareholders.find(p=>p.id===x.personId).name):''),esc(x.type),m2(x.amount),`<span class="muted">${esc(x.note)}</span>`]})),
       {empty:emptyState('people','No payments in yet','Tap + to record each share\'s deposit and monthly contributions.',''),foot:list.length?['Total','','',m2(sum(list,x=>x.amount)),'']:null})}
   </section></div>`;
 }
@@ -1680,7 +1681,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.08.17';
+const APP_VERSION='2026.11.08.18';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -2040,13 +2041,13 @@ function formPerson(id,share){
 }
 function formContrib(id,pre={}){
   const c=C(),x=c.contributions.find(a=>a.id===id);
-  openForm({title:x?'Edit payment':(pre.type?`Add ${pre.type.toLowerCase()} payment`:'Record payment'),done:'Payment saved',fields:[
+  openForm({title:x?'Edit payment':(pre.type?`Add ${pre.type.toLowerCase()} payment${pre.who?' · '+pre.who:''}`:'Record payment'),done:'Payment saved',fields:[
     {id:'shareId',label:'Which share paid',type:'select',options:[1,2,3,4].map(n=>[n,`Share ${n} (${c.shareholders.filter(p=>p.share===n).map(p=>p.name).join(', ')||'no members'})`]),value:x?shareOf(c,x):(pre.shareId||(personFilter!=='all'?personFilter:1))},
     {id:'date',label:'Date',type:'date',value:x?.date??iso(today()),half:1,required:1},
     {id:'amount',label:'Amount ($)',type:'number',value:x?.amount,half:1,required:1},
     {id:'type',label:'What it was for',type:'select',options:CONTRIB_TYPES,value:x?(catOf(x)==='Other'?x.type:catOf(x)):(pre.type||'Principal')},
     {id:'note',label:'Note',value:x?.note,placeholder:'e.g. Bank transfer, October repayment'}
-  ],onSave:v=>{upsert(c.contributions,x?.id,{...v,shareId:Number(v.shareId),personId:''})},onDelete:x?()=>remove(c.contributions,x.id):null});
+  ],onSave:v=>{const sid=Number(v.shareId);let pid=x?(x.personId||''):(pre.personId||'');const pp=c.shareholders.find(p=>p.id===pid);if(pp&&pp.share!==sid)pid='';upsert(c.contributions,x?.id,{...v,shareId:sid,personId:pid})},onDelete:x?()=>remove(c.contributions,x.id):null});
 }
 function formLoan(){
   const c=C(),l=c.loan,r=currentRate(c);
@@ -2300,17 +2301,22 @@ function openSettings(){
     img.onerror=()=>{URL.revokeObjectURL(url);toast('That image could not be read. Try another file.')};img.src=url};
 }
 function planMonthly(c,n,cat){return sum(c.plans.filter(p=>Number(p.shareId)===n&&(!cat||p.cat===cat)&&(!p.until||p.until>=iso(today()))),p=>p.amount)}
-let shTab='Deposit';
-function openShare(n,tab){n=Number(n);if(tab)shTab=tab;const c=C(),cat=shTab,T=totals(c);
-  const ms=c.shareholders.filter(p=>p.share===n).map(p=>p.name);
-  const pays=c.contributions.filter(x=>shareOf(c,x)===n&&catOf(x)===cat).sort(byDate).reverse();
-  const plans=c.plans.filter(p=>Number(p.shareId)===n&&p.cat===cat);
-  const paid=sum(pays,x=>x.amount),monthly=planMonthly(c,n,cat);
+let shTab='Deposit',shPid='';
+function mineOf(c,x,n,pid,single){return shareOf(c,x)===n&&(x.personId===pid||(!x.personId&&single))}
+function openShare(n,tab,pid){n=Number(n);if(tab)shTab=tab;if(pid!=null)shPid=pid;const c=C(),cat=shTab,T=totals(c);
+  const members=c.shareholders.filter(p=>p.share===n),me=members.find(p=>p.id===shPid)||members[0];if(!me){toast('No one in this share yet');return}
+  shPid=me.id;const single=members.length===1;
+  const pays=c.contributions.filter(x=>catOf(x)===cat&&mineOf(c,x,n,me.id,single)).sort(byDate).reverse();
+  const plans=c.plans.filter(p=>Number(p.shareId)===n&&p.cat===cat&&(p.personId===me.id||(!p.personId&&single)));
+  const together=single?0:sum(c.contributions.filter(x=>catOf(x)===cat&&shareOf(c,x)===n&&!x.personId),x=>x.amount);
+  const paid=sum(pays,x=>x.amount),monthly=sum(plans.filter(p=>!p.until||p.until>=iso(today())),p=>p.amount);
   const ord=d=>{const k=+d,s=['th','st','nd','rd'],v=k%100;return k+(s[(v-20)%10]||s[v]||s[0])};
   const kp=(l,v,cls='')=>`<div class="shk ${cls}"><small>${l}</small><b>${v}</b></div>`;
   let kpis=kp('Paid so far',m2(paid))+kp('Monthly',m2(monthly)+'<em>/mo</em>');
-  if(cat==='Deposit'){const due=T.depositReq/4;kpis=kp('Share of deposit',m2(due))+kp('Paid so far',m2(paid))+kp('Left to pay',m2(Math.max(0,due-paid)),due-paid>0.005?'warn':'ok')}
-  openForm({title:`Share ${n} · ${ms.join(', ')||'No members'}`,noSave:1,noFocus:1,fields:[{id:'sh',type:'html',html:`
+  if(cat==='Deposit'){const due=T.depositReq/4/members.length;kpis=kp(single?'Share of deposit':'Their part of deposit',m2(due))+kp('Paid so far',m2(paid))+kp('Left to pay',m2(Math.max(0,due-paid)),due-paid>0.005?'warn':'ok')}
+  const pct=+(25/members.length).toFixed(2);
+  openForm({title:me.name,noSave:1,noFocus:1,fields:[{id:'sh',type:'html',html:`
+    <p class="shsub">Share ${n} · ${pct}%${single?'':` · with ${esc(members.filter(p=>p!==me).map(p=>p.name).join(' and '))}`}</p>
     <div class="subtabs shtabs" role="tablist" aria-label="Payment type">${SH_CATS.map(k=>`<button type="button" role="tab" aria-selected="${k===cat}" data-act="sh-tab" data-n="${n}" data-tab="${k}">${k}</button>`).join('')}</div>
     <div class="shkpis">${kpis}</div>
     <div class="shsec"><p class="setlabel">Monthly contribution</p>
@@ -2318,17 +2324,18 @@ function openShare(n,tab){n=Number(n);if(tab)shTab=tab;const c=C(),cat=shTab,T=t
       <button type="button" class="btn" data-act="sh-add-plan" data-n="${n}">${plans.length?'Add another':'Set monthly'} ${cat.toLowerCase()}</button></div>
     <div class="shsec"><p class="setlabel">Paid in</p>
       <div class="setlist">${pays.map(x=>lrow('sh-pay',x.id,m2(x.amount),esc([fd(x.date),x.note].filter(Boolean).join(' · ')))).join('')||'<div class="empty">Nothing paid in yet.</div>'}</div>
+      ${together?`<p class="muted small" style="margin-top:6px">Also ${m2(together)} paid by Share ${n} as a whole, not under one name.</p>`:''}
       <button type="button" class="btn gold" data-act="sh-add-pay" data-n="${n}">Add ${cat.toLowerCase()} payment</button></div>`}]});
 }
-function formPlan(n,id){const c=C(),x=c.plans.find(p=>p.id===id);n=x?Number(x.shareId):Number(n);const cat=x?x.cat:shTab;
-  openForm({title:`${x?'Edit':'Set'} monthly ${cat.toLowerCase()} · Share ${n}`,done:'Monthly contribution saved',fields:[
+function formPlan(n,id){const c=C(),x=c.plans.find(p=>p.id===id);n=x?Number(x.shareId):Number(n);const cat=x?x.cat:shTab,pid=x?(x.personId||''):shPid,who=(c.shareholders.find(p=>p.id===pid)||{}).name;
+  openForm({title:`${x?'Edit':'Set'} monthly ${cat.toLowerCase()} · ${who||'Share '+n}`,done:'Monthly contribution saved',fields:[
     {id:'amount',label:'Amount each month ($)',type:'number',value:x?.amount,half:1,required:1},
     {id:'day',label:'Day of the month',type:'select',options:Array.from({length:28},(_,i)=>[i+1,String(i+1)]),value:x?.day??1,half:1},
     {id:'from',label:'Starting',type:'date',value:x?.from??iso(today()),half:1},
     {id:'until',label:'Ending (optional)',type:'date',value:x?.until,half:1},
     {id:'note',label:'Note',value:x?.note,placeholder:'e.g. Direct debit from CBA'}
   ],onSave:v=>{if(!(num(v.amount)>0))return 'Enter an amount above $0.';if(v.until&&v.from&&v.until<v.from)return 'The end date is before the start date.';
-    upsert(c.plans,x?.id,{shareId:n,cat,amount:num(v.amount),day:Number(v.day),from:v.from,until:v.until||'',note:v.note})},
+    upsert(c.plans,x?.id,{shareId:n,personId:pid,cat,amount:num(v.amount),day:Number(v.day),from:v.from,until:v.until||'',note:v.note})},
   onDelete:x?()=>remove(c.plans,x.id):null});
 }
 function vSetup(c){const l=c.land,L=loanState(c);
@@ -2374,7 +2381,7 @@ const ACTIONS={
   'rep-email-all':()=>emailReport(rRecipients().filter(p=>p.email).map(p=>({to:p.email,name:p.name}))),'subtab':d=>{if(d.key==='mortgage')mTab=d.tab;else if(d.key==='outgoings')oTab=d.tab;render()},'add-person':()=>formPerson(),
   'set-setup':()=>fromSetup(formSetup),'set-company':()=>fromSetup(formCompany),'set-land':()=>fromSetup(formLand),'set-loan':()=>fromSetup(formLoan),
   'set-rates':()=>fromSetup(openRateList),'set-people':()=>fromSetup(openPeopleList),'set-stages':()=>fromSetup(openStageList),'set-clear':()=>fromSetup(clearSample),
-  'share-open':d=>{navStack=[];openShare(d.n,'Deposit')},'sh-tab':d=>openShare(d.n,d.tab),'sh-add-pay':d=>child(()=>openShare(d.n),()=>formContrib(null,{shareId:Number(d.n),type:shTab})),'sh-pay':d=>{const x=C().contributions.find(q=>q.id===d.id);const n=x?shareOf(C(),x):1;child(()=>openShare(n),()=>formContrib(d.id))},'sh-add-plan':d=>child(()=>openShare(d.n),()=>formPlan(d.n)),'sh-plan':d=>{const x=C().plans.find(q=>q.id===d.id);child(()=>openShare(x?x.shareId:1),()=>formPlan(null,d.id))},
+  'share-open':d=>{navStack=[];openShare(d.n,'Deposit',d.pid||'')},'sh-tab':d=>openShare(d.n,d.tab),'sh-add-pay':d=>{const pid=shPid,who=(C().shareholders.find(p=>p.id===pid)||{}).name;child(()=>openShare(d.n,null,pid),()=>formContrib(null,{shareId:Number(d.n),type:shTab,personId:pid,who}))},'sh-pay':d=>{const x=C().contributions.find(q=>q.id===d.id);const n=x?shareOf(C(),x):1,pid=shPid;child(()=>openShare(n,null,pid),()=>formContrib(d.id))},'sh-add-plan':d=>{const pid=shPid;child(()=>openShare(d.n,null,pid),()=>formPlan(d.n))},'sh-plan':d=>{const x=C().plans.find(q=>q.id===d.id),pid=shPid;child(()=>openShare(x?x.shareId:1,null,pid),()=>formPlan(null,d.id))},
   'sl-rate':d=>child(openRateList,()=>formRate(d.id)),'sl-add-rate':()=>child(openRateList,()=>formRate()),
   'sl-person':d=>child(openPeopleList,()=>formPerson(d.id)),'sl-add-person':()=>child(openPeopleList,()=>formPerson()),
   'set-banks':()=>fromSetup(openBankList),'set-utils':()=>fromSetup(openUtilList),'sl-bank':d=>child(openBankList,()=>formBank(d.id)),'sl-add-bank':()=>child(openBankList,()=>formBank()),'sl-util':d=>child(openUtilList,()=>formUtilType(d.id)),'sl-add-util':()=>child(openUtilList,()=>formUtilType()),
