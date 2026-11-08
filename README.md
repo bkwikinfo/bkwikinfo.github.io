@@ -40,6 +40,17 @@ window.PBK_CONFIG = { scriptUrl: 'https://script.google.com/macros/s/…/exec', 
 ### 5. Install on your phone
 Open https://bkwikinfo.github.io → sign in → iPhone: Share → **Add to Home Screen**; Android: menu → **Install app**.
 
+## Updating the Google Script (needed for automatic emails and the shareholder portal)
+
+1. Open the Google Sheet → **Extensions → Apps Script**.
+2. Select everything in `Code.gs`, delete it, and paste in the new `apps-script/Code.gs` from this repo.
+3. Click **Save**, then **Deploy → Manage deployments → ✏️ Edit → Version: New version → Deploy**. The web app link stays the same.
+4. Choose `setup` in the function list and click **Run** once (it keeps the 8am daily trigger).
+
+After this:
+- **Setup → Automatic emails** in the app controls the monthly summaries, overdue reminders, loan and bill alerts and the weekly backup.
+- Shareholders can open the same app link and sign in with the Google email saved for them. They see **only their own** payments, monthly amounts and statements, and can't change anything.
+
 ## Notes
 - Only bkwikinfo@gmail.com can sign in; every request is checked by the Apps Script.
 - The Sheet also gets readable tabs per company (Shareholders, Payments in, Mortgage, Utilities, Project works),

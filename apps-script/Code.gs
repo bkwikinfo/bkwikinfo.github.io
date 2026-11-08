@@ -20,8 +20,11 @@ function doPost(e) {
   try {
     const req = JSON.parse(e.postData.contents || '{}');
     const user = verify_(req.token);
+    const role = role_(user);
+    if (role !== 'admin' && ['whoami', 'portal'].indexOf(req.action) < 0) return json({ ok: false, error: 'Only the admin can do that.' });
     switch (req.action) {
-      case 'whoami': return json({ ok: true, email: user });
+      case 'whoami': return json({ ok: true, email: user, role: role });
+      case 'portal': return json(portal_(user));
       case 'load': return json({ ok: true, companies: Object.keys(COMPANIES).reduce((o, id) => { o[id] = load_(id); return o; }, {}) });
       case 'save': return json(save_(req.id, req.data, req.version));
       case 'versions': return json({ ok: true, versions: Object.keys(COMPANIES).reduce((o, id) => { const x = load_(id); o[id] = x ? x.version : 0; return o; }, {}) });
@@ -47,10 +50,35 @@ function verify_(token) {
   const email = String(info.email || '').toLowerCase();
   if (info.aud !== CLIENT_ID) throw new Error('AUTH: wrong app');
   if (String(info.email_verified) !== 'true') throw new Error('AUTH: email not verified');
-  if (ADMIN_EMAILS.indexOf(email) < 0) throw new Error('AUTH: this Google account is not allowed');
   const left = Number(info.exp) - Math.floor(Date.now() / 1000);
   if (left > 60) cache.put(key, email, Math.min(left - 30, 1800));
   return email;
+}
+
+/* ---------- who is signed in ---------- */
+function role_(email) {
+  if (ADMIN_EMAILS.indexOf(email) >= 0) return 'admin';
+  const found = Object.keys(COMPANIES).some(id => { const x = load_(id); return x && (x.data.shareholders || []).some(p => String(p.email || '').trim().toLowerCase() === email); });
+  if (found) return 'shareholder';
+  throw new Error('NOACCESS: This Google account (' + email + ') is not set up in B KWIK. Ask the admin to add this email to your shareholder details.');
+}
+/* a shareholder only ever receives their own records */
+function portal_(email) {
+  const out = [];
+  Object.keys(COMPANIES).forEach(id => {
+    const x = load_(id); if (!x) return; const d = x.data;
+    (d.shareholders || []).filter(p => String(p.email || '').trim().toLowerCase() === email).forEach(p => {
+      const single = (d.shareholders || []).filter(q => Number(q.share) === Number(p.share)).length === 1;
+      const mine = r => (r.personId === p.id) || (!r.personId && single && shareOf_(d, r) === Number(p.share));
+      const members = (d.shareholders || []).filter(q => Number(q.share) === Number(p.share)).length;
+      out.push({ id: id, name: d.name || COMPANIES[id].name, abn: d.abn || '', email: d.email || COMPANIES[id].from, phone: d.phone || '', address: d.address || '',
+        land: d.land ? { address: d.land.address || '' } : {},
+        person: { id: p.id, name: p.name, share: Number(p.share), email: p.email, pct: +(25 / members).toFixed(2) },
+        plans: (d.plans || []).filter(r => Number(r.shareId) === Number(p.share) && mine(r)).map(r => ({ id: r.id, shareId: Number(r.shareId), personId: p.id, cat: r.cat, amount: r.amount, day: r.day, from: r.from, until: r.until })),
+        contributions: (d.contributions || []).filter(r => shareOf_(d, r) === Number(p.share) && mine(r)).map(r => ({ id: r.id, date: r.date, amount: r.amount, type: r.type, shareId: Number(p.share), personId: p.id, note: String(r.note || '').replace(/^Bank: /, '') })) });
+    });
+  });
+  return { ok: true, companies: out };
 }
 
 /* ---------- storage ---------- */
@@ -133,6 +161,106 @@ function sendEmail_(id, emails, attachment) {
   return { ok: true, sent, failed, from: useFrom ? from : Session.getEffectiveUser().getEmail(), aliasReady: useFrom };
 }
 
+
+/* ---------- automatic emails (set in the app: Setup > Automatic emails) ---------- */
+function ym_(s) { return String(s || '').slice(0, 7); }
+function mRange_(ym) { const p = ym.split('-').map(Number); const last = new Date(p[0], p[1], 0).getDate(); return [ym + '-01', ym + '-' + ('0' + last).slice(-2)]; }
+function addYm_(ym, k) { const p = ym.split('-').map(Number); const d = new Date(p[0], p[1] - 1 + k, 1); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2); }
+function ymLabel_(ym) { const p = ym.split('-').map(Number); return Utilities.formatDate(new Date(p[0], p[1] - 1, 1), 'Australia/Brisbane', 'MMMM yyyy'); }
+function shareOf_(d, x) { if (x.shareId) return Number(x.shareId); const p = (d.shareholders || []).find(q => q.id === x.personId); return p ? Number(p.share) : 0; }
+function catOf_(x) { const t = String(x.type || ''); if (t === 'Deposit') return 'Deposit'; if (t === 'Principal' || t === 'Loan repayment') return 'Principal'; if (t === 'Interest') return 'Interest'; if (t === 'Outgoings' || t === 'Expense' || t === 'Construction') return 'Outgoings'; return 'Other'; }
+const CATS_ = ['Deposit', 'Principal', 'Interest', 'Outgoings'];
+function planDue_(x, ym) { const r = mRange_(ym); return (!x.from || x.from <= r[1]) && (!x.until || x.until >= r[0]) ? (Number(x.amount) || 0) : 0; }
+function personData_(d, p) {
+  const single = (d.shareholders || []).filter(q => Number(q.share) === Number(p.share)).length === 1;
+  const mine = r => r.personId === p.id || (!r.personId && single);
+  return { plans: (d.plans || []).filter(x => Number(x.shareId) === Number(p.share) && mine(x)), pays: (d.contributions || []).filter(x => shareOf_(d, x) === Number(p.share) && mine(x)) };
+}
+function statement_(d, p, ym) {
+  const pd = personData_(d, p), r = mRange_(ym);
+  const rows = CATS_.map(cat => { const pl = pd.plans.filter(x => x.cat === cat); const due = pl.reduce((a, x) => a + planDue_(x, ym), 0);
+    const paid = pd.pays.filter(x => catOf_(x) === cat && x.date >= r[0] && x.date <= r[1]).reduce((a, x) => a + (Number(x.amount) || 0), 0);
+    const act = pl.find(x => planDue_(x, ym)); return { cat: cat, due: due, paid: paid, day: act ? (Number(act.day) || 1) : null }; }).filter(x => x.due > 0 || x.paid > 0);
+  let earlier = 0;
+  CATS_.forEach(cat => { const pl = pd.plans.filter(x => x.cat === cat); if (!pl.length) return; const start = pl.map(x => ym_(x.from) || ym).sort()[0];
+    for (let k = start; k < ym; k = addYm_(k, 1)) earlier += pl.reduce((a, x) => a + planDue_(x, k), 0) - pd.pays.filter(x => catOf_(x) === cat && ym_(x.date) === k).reduce((a, x) => a + (Number(x.amount) || 0), 0); });
+  const due = rows.reduce((a, x) => a + x.due, 0), paid = rows.reduce((a, x) => a + x.paid, 0);
+  const dueDay = rows.filter(x => x.day).map(x => x.day).sort((a, b) => a - b)[0] || null;
+  return { rows: rows, due: due, paid: paid, earlier: earlier, dueDay: dueDay };
+}
+function stLabel_(due, paid) { return due <= 0.005 && paid <= 0.005 ? 'No monthly amount' : paid <= 0.005 ? 'Not paid' : paid < due - 0.005 ? 'Partly paid' : paid > due + 0.005 ? 'Extra paid' : 'Paid'; }
+function stText_(d, p, S, ym, overdue) {
+  const name = d.name || 'the company', L = [];
+  L.push('Hi ' + p.name + ',', '');
+  L.push(overdue ? 'This is a friendly reminder that your ' + name + ' payment for ' + ymLabel_(ym) + ' (Share ' + p.share + ') has not been fully received yet.' : 'Here is your ' + name + ' payment summary for ' + ymLabel_(ym) + ' (Share ' + p.share + ').', '');
+  S.rows.forEach(r => L.push(r.cat + ': due ' + money_(r.due) + (r.day ? ' (on day ' + r.day + ')' : '') + ', paid ' + money_(r.paid) + ' – ' + stLabel_(r.due, r.paid)));
+  if (!S.rows.length) L.push('No monthly payment is set for you this month.');
+  L.push('', 'Total due: ' + money_(S.due), 'Total paid: ' + money_(S.paid));
+  const diff = S.paid - S.due;
+  if (diff < -0.005) L.push('Still to pay this month: ' + money_(-diff)); else if (diff > 0.005) L.push('Extra paid this month: ' + money_(diff)); else if (S.due > 0) L.push('This month is fully paid. Thank you.');
+  if (S.earlier > 0.005) L.push('Still owing from earlier months: ' + money_(S.earlier)); else if (S.earlier < -0.005) L.push('Paid ahead from earlier months: ' + money_(-S.earlier));
+  if (overdue) L.push('', 'If you have already paid, thank you, and please ignore this message.');
+  L.push('', 'This message is just for you.', '', 'Kind regards,', name);
+  return L.join('\n');
+}
+function logAuto_(d, subject, list, source) {
+  d.messages = d.messages || [];
+  d.messages.push({ id: Utilities.getUuid().slice(0, 8), date: Utilities.formatDate(new Date(), 'Australia/Brisbane', 'yyyy-MM-dd'), subject: subject, body: 'Individual messages', audience: 'statements', channels: ['email'], emailed: list.length, auto: true, source: source,
+    recipients: list.map(x => ({ personId: x.p.id, name: x.p.name, email: x.p.email, text: x.text, missing: [] })) });
+}
+function runAuto_(id, d, today) {
+  const a = d.auto || {}, day = Number(today.slice(8)), ym = ym_(today), name = d.name || COMPANIES[id].name;
+  d.autoLog = d.autoLog || {}; let changed = false; const gotSummary = {};
+  const people = (d.shareholders || []).filter(p => p.email);
+  // 1. monthly summary
+  if (Number(a.statementDay) && day === Number(a.statementDay) && !d.autoLog['st-' + ym]) {
+    const list = people.map(p => ({ p: p, S: statement_(d, p, ym) })).filter(x => a.statementWho === 'all' || (a.statementWho === 'owing' ? x.S.paid < x.S.due - 0.005 : x.S.due > 0))
+      .map(x => ({ p: x.p, text: stText_(d, x.p, x.S, ym, false) }));
+    list.forEach(x => gotSummary[x.p.id] = 1);
+    if (list.length) { sendEmail_(id, list.map(x => ({ to: x.p.email, subject: 'Your payment summary for ' + ymLabel_(ym) + ' · ' + name, body: x.text }))); logAuto_(d, 'Your payment summary for ' + ymLabel_(ym), list, 'statement'); }
+    d.autoLog['st-' + ym] = today; changed = true;
+  }
+  // 2. overdue reminder, once a month per person
+  if (Number(a.overdueDays)) {
+    const list = [];
+    people.forEach(p => { const S = statement_(d, p, ym); if (!S.dueDay || S.paid >= S.due - 0.005) return; if (gotSummary[p.id]) return; if (day < S.dueDay + Number(a.overdueDays)) return;
+      const key = 'od-' + p.id + '-' + ym; if (d.autoLog[key]) return; d.autoLog[key] = today; list.push({ p: p, text: stText_(d, p, S, ym, true) }); });
+    if (list.length) { sendEmail_(id, list.map(x => ({ to: x.p.email, subject: 'Payment reminder for ' + ymLabel_(ym) + ' · ' + name, body: x.text }))); logAuto_(d, 'Payment reminder for ' + ymLabel_(ym), list, 'overdue'); changed = true; }
+  }
+  const admin = ADMIN_EMAILS[0];
+  // 3. loan repayment alert to the admin
+  const L = d.loan || {};
+  if (Number(a.loanAlertDays) && Number(L.repayment)) {
+    const dd = Math.min(28, Math.max(1, Number(L.dueDay) || 1)); const t = new Date(today + 'T00:00:00');
+    let due = new Date(t.getFullYear(), t.getMonth(), dd); if (due < t) due = new Date(t.getFullYear(), t.getMonth() + 1, dd);
+    const dueIso = Utilities.formatDate(due, 'Australia/Brisbane', 'yyyy-MM-dd'), diffDays = Math.round((due - t) / 86400000);
+    if (diffDays === Number(a.loanAlertDays) && !d.autoLog['la-' + dueIso]) {
+      const r = mRange_(ym_(dueIso)); const got = (d.contributions || []).filter(x => x.date >= r[0] && x.date <= r[1] && ['Principal', 'Interest'].indexOf(catOf_(x)) >= 0).reduce((s, x) => s + (Number(x.amount) || 0), 0);
+      const body = 'Loan repayment of ' + money_(L.repayment) + ' for ' + name + ' is due on ' + niceDate_(dueIso) + (L.lender ? ' (' + L.lender + ')' : '') + '.\n\nPrincipal and interest received from shareholders this month: ' + money_(got) + '.\n' + (got + 0.005 < Number(L.repayment) ? 'That is ' + money_(Number(L.repayment) - got) + ' short of the repayment.' : 'That covers the repayment.') + '\n\nB KWIK';
+      sendEmail_(id, [{ to: admin, subject: 'Loan repayment due ' + niceDate_(dueIso) + ' · ' + name, body: body }]); d.autoLog['la-' + dueIso] = today; changed = true;
+    }
+  }
+  // 4. bills due soon (from reminders) to the admin
+  if (Number(a.billAlertDays)) {
+    const t = new Date(today + 'T00:00:00');
+    (d.reminders || []).filter(r => r.active !== false && r.nextDate && ['Loan repayment', 'Meeting'].indexOf(r.type) < 0).forEach(r => {
+      const due = new Date(r.nextDate + 'T00:00:00'), dd = Math.round((due - t) / 86400000), key = 'bill-' + r.id + '-' + r.nextDate;
+      if (dd !== Number(a.billAlertDays) || d.autoLog[key]) return;
+      sendEmail_(id, [{ to: admin, subject: r.title + ' due ' + niceDate_(r.nextDate) + ' · ' + name, body: r.title + (Number(r.amount) ? ' of ' + money_(r.amount) : '') + ' is due on ' + niceDate_(r.nextDate) + ' for ' + name + '.\n\nB KWIK' }]);
+      d.autoLog[key] = today; changed = true; });
+  }
+  // keep the log small
+  const keys = Object.keys(d.autoLog); if (keys.length > 400) keys.sort((x, y) => String(d.autoLog[x]).localeCompare(String(d.autoLog[y]))).slice(0, keys.length - 300).forEach(k => delete d.autoLog[k]);
+  return changed;
+}
+function weeklyBackup_(today) {
+  const t = new Date(today + 'T00:00:00'); if (t.getDay() !== 1) return;
+  const want = Object.keys(COMPANIES).some(id => { const x = load_(id); return x && x.data.auto && x.data.auto.backup === 'weekly'; }); if (!want) return;
+  const all = Object.keys(COMPANIES).reduce((o, id) => { const x = load_(id); o[id] = x ? x.data : null; return o; }, {});
+  const blob = Utilities.newBlob(JSON.stringify(all, null, 1), 'application/json', 'B KWIK backup ' + today + '.json');
+  GmailApp.sendEmail(ADMIN_EMAILS[0], 'B KWIK weekly backup ' + niceDate_(today), 'Attached is a full backup of B IN DALBY and KWIK TRIP as of ' + niceDate_(today) + '.\nKeep it somewhere safe. It contains everyone\'s details.', { attachments: [blob], name: 'B KWIK' });
+}
+
 /* ---------- automatic daily reminders ---------- */
 function dailyReminders() {
   const today = Utilities.formatDate(new Date(), 'Australia/Brisbane', 'yyyy-MM-dd');
@@ -152,9 +280,11 @@ function dailyReminders() {
         if (r.frequency === 'once') r.active = false; else r.nextDate = nextDate_(r.nextDate, r.frequency);
         changed = true;
       });
+      try { if (runAuto_(id, d, today)) changed = true; } catch (e) { Logger.log('Automatic emails failed for ' + id + ': ' + e); }
       if (changed) write_(id, d, cur.version + 1);
     } finally { lock.releaseLock(); }
   });
+  try { weeklyBackup_(today); } catch (e) { Logger.log('Backup failed: ' + e); }
 }
 function audience_(d, a) { const all = d.shareholders || []; if (!a || a === 'all') return all; const s = Number(String(a).slice(1)); return all.filter(p => p.share === s); }
 function money_(n) { return '$' + (Number(n) || 0).toLocaleString('en-AU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }

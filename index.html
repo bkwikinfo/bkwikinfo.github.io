@@ -960,6 +960,32 @@ body[data-mode="dark"] .bad-t{color:#f08a8a}body[data-mode="dark"] .ok-t{color:#
 .stsend{display:flex;flex-wrap:wrap;gap:8px}.stsend .btn{flex:1 1 auto;text-align:center}
 @media (max-width:860px){.stsum{grid-template-columns:repeat(4,1fr)}.stsum .sts:last-child{grid-column:1/-1}.sts{padding:8px}.sts b{font-size:16px}.sts small{font-size:11px}
   .stbar .btn{width:100%}.mnav{width:100%;justify-content:space-between}}
+/* admin pack */
+.shnote{margin-top:12px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,#f7d774 18%,transparent);border:1px dashed color-mix(in srgb,#c79a1a 50%,transparent);font-size:13px;white-space:pre-wrap}
+.shnote b{display:block;font-size:11.5px;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-bottom:2px}
+.shmore{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.shmore .btn{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 6px;font-size:12.5px;line-height:1.2;text-align:center}
+.shmore .btn svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.8}
+.audlist{display:flex;flex-direction:column;gap:2px;max-height:60vh;overflow:auto}
+.aud{padding:8px 4px;border-bottom:1px solid color-mix(in srgb,var(--ink) 10%,transparent)}.aud b{display:block;font-size:14px}.aud small{font-size:12px;color:var(--muted)}
+.filebtn{display:inline-flex;cursor:pointer;margin-bottom:10px}
+.imp{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto}
+.impr{padding:10px;border-radius:12px;background:color-mix(in srgb,var(--glass) 40%,transparent);border:1px solid color-mix(in srgb,var(--glass) 70%,transparent)}
+.impr.dup{opacity:.7}.impc{display:flex;gap:10px;align-items:flex-start;cursor:pointer}.impc input{margin-top:3px;width:18px;height:18px}
+.impc small{display:block;font-size:12px;color:var(--muted);word-break:break-word}
+.impsel{display:grid;grid-template-columns:2fr 1fr;gap:6px;margin-top:8px}.impsel select{width:100%}
+.gatealt{margin-top:12px;padding:8px 16px;border-radius:999px;border:1px solid rgba(255,255,255,.5);background:rgba(255,255,255,.12);color:#fff;font:600 13px "IBM Plex Sans",system-ui,sans-serif;cursor:pointer}
+/* three sub-tabs */
+.subtabs:has(> :nth-child(3):last-child){grid-template-columns:repeat(3,1fr)}
+@media (max-width:860px){.subtabs:has(> :nth-child(3):last-child){max-width:none}}
+/* portal */
+body.portal > *:not(#portal):not(#modal):not(#toast):not(script):not(.bglogo){display:none!important}
+#portal{position:relative;z-index:2;min-height:100vh;padding:calc(14px + env(safe-area-inset-top) * 1.4) 14px 30px}
+.pwrap{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.phead{display:flex;align-items:center;gap:12px}.phead div{flex:1;display:flex;flex-direction:column}.phead b{font:600 22px Georgia,serif;color:var(--navy)}.phead small{color:var(--muted);font-size:12.5px}
+.plogo{width:48px;height:48px;object-fit:contain}
+.ptabs{max-width:none}.pfoot{text-align:center;margin-top:6px}
+body[data-mode="dark"] .phead b{color:var(--third)}
 @media (prefers-reduced-motion:reduce){.view.enter > *{animation:none}.sk{animation:none}}
 @media (prefers-reduced-motion:reduce){.sp-logo,.sp-logo img,.sp-name span,.sp-line,.sp-sub{animation-duration:.01s!important;animation-delay:0s!important}.sp-line{width:180px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -996,7 +1022,7 @@ body[data-mode="dark"] .bad-t{color:#f08a8a}body[data-mode="dark"] .ok-t{color:#
     <div class="sp-cos"><img src="logo-dalby-dark.png" alt="" width="120" height="120"><span class="sp-sep"></span><img src="logo-kwik.png" alt="" width="120" height="120"></div>
   </div>
 </div>
-<div id="gate" class="gate" hidden><div class="gatecard"><img class="gatelogo" src="bkwik-logo.png" alt="B KWIK logo" width="120" height="120"><h1>B KWIK</h1><p class="gatesub">Admin sign-in</p><div class="gbtn-wrap"><div id="gbtn"></div></div><p id="gatemsg" class="small muted"></p></div></div>
+<div id="gate" class="gate" hidden><div class="gatecard"><img class="gatelogo" src="bkwik-logo.png" alt="B KWIK logo" width="120" height="120"><h1>B KWIK</h1><p class="gatesub">Sign in</p><div class="gbtn-wrap"><div id="gbtn"></div></div><p id="gatemsg" class="small muted"></p></div></div>
 <button class="fab" data-act="fab" aria-label="Add"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>
 <div id="modal" hidden></div>
 <div class="toast" id="toast" hidden role="status"></div>
@@ -1094,7 +1120,8 @@ function normalize(d,c){
   o.land={...b.land,...(d.land||{})};
   o.loan={...b.loan,...(d.loan||{})};
   if(!Array.isArray(o.loan.rates))o.loan.rates=[];
-  ['shareholders','contributions','plans','payments','expenses','stages','reminders','messages','banks','utilityTypes'].forEach(k=>{if(!Array.isArray(o[k]))o[k]=[]});
+  ['shareholders','contributions','plans','payments','expenses','stages','reminders','messages','banks','utilityTypes','ownership','meetings','audits'].forEach(k=>{if(!Array.isArray(o[k]))o[k]=[]});
+  o.auto=Object.assign({statementDay:0,statementWho:'plan',overdueDays:0,receipts:false,loanAlertDays:0,billAlertDays:0,backup:''},o.auto&&typeof o.auto==='object'?o.auto:{});
   if(!o.banks.length&&o.loan.lender)o.banks=[o.loan.lender];
   o.payments.forEach(x=>{if(!x.type)x.type='regular';if(x.bank==null)x.bank=o.loan.lender||''});
   o.expenses.forEach(x=>{if(x.category==='Approvals & permits')x.category='DA Approvals & permits';if(!x.kind)x.kind=LEGACY_UTIL.has(x.category)?'utility':'work';if(x.kind==='utility'&&!x.utility)x.utility=x.category});
@@ -1349,12 +1376,13 @@ function subtabsHtml(name,curTab,tabs){return `<div class="subtabs" role="tablis
 let hTab='shares',stMonth=null;
 function vHolders(c){
   if(hTab==='monthly')return vMonthly(c);
+  if(hTab==='meetings')return vMeetings(c);
   const T=totals(c);
   const list=[...c.contributions].sort(byDate).reverse().filter(x=>personFilter==='all'||shareOf(c,x)===Number(personFilter));
   return `
   <div class="pagehead"><div><h1>Shareholders</h1></div>
     </div>
-  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments']])}
+  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments'],['meetings','Meetings']])}
   <div class="vscroll">
   <div class="v-overview sharehost"><div class="shares">${[1,2,3,4].map(n=>shareCard(c,n)).join('')}</div></div>
   <section class="card"><header class="ch"><h2>Paid in by share</h2></header>
@@ -1416,7 +1444,7 @@ function vMortgage(c){
   }
   return `
   <div class="pagehead"><div><h1>Mortgage</h1></div>
-    </div>
+    <div class="actions"><button class="btn sm" data-act="forecast">Payoff forecast</button><button class="btn sm" data-act="rate-tool">Rate change</button></div></div>
   <div class="subwrap" data-ov="${mTab==='interest'?'shareholders':'overview'}">${tabs}<div class="subbody ls">${body}</div></div>`;
 }
 function vOutgoings(c){
@@ -1701,7 +1729,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.09.1';
+const APP_VERSION='2026.11.09.2';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -1724,7 +1752,7 @@ async function buildPdf(M){
   if(LH)useLetterhead(doc,LH,W,H);
   let y=TOP1;
   // title block
-  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TEAL);doc.setCharSpace(1.6);doc.text('REPORT',mx,y);doc.setCharSpace(0);
+  doc.setFont('helvetica','bold');doc.setFontSize(8.5);doc.setTextColor(...TEAL);doc.setCharSpace(1.6);doc.text(txt(M.kicker||'REPORT'),mx,y);doc.setCharSpace(0);
   doc.setFont('helvetica','normal');doc.setFontSize(9);doc.setTextColor(...MUTED);doc.text(txt('Prepared '+M.made),W-mx,y,{align:'right'});
   y+=20;doc.setFont('times','bold');doc.setFontSize(20);doc.setTextColor(...DARK);doc.text(txt(M.title.replace(/ report$/i,'')),mx,y);
   y+=17;doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...MUTED);doc.text(txt(M.sub),mx,y);
@@ -1736,6 +1764,7 @@ async function buildPdf(M){
   for(const b of M.blocks){
     if(b.type==='company'){need(70);y+=6;doc.setFillColor(...DARK);doc.rect(mx,y,CW,24,'F');doc.setFont('helvetica','bold');doc.setFontSize(11);doc.setTextColor(255,255,255);doc.setCharSpace(1.2);doc.text(txt(b.title).toUpperCase(),mx+10,y+16);doc.setCharSpace(0);y+=40;continue}
     head(b.title);
+    if(b.type==='text'){doc.setFont('helvetica','normal');doc.setFontSize(10);doc.setTextColor(...INK);String(b.text||'').split(/\n/).forEach(par=>{const ls=par.trim()?doc.splitTextToSize(txt(par),CW):[''];ls.forEach(l=>{need(15);y+=2;doc.text(l,mx,y+9);y+=13})});y+=18;continue}
     if(b.type==='kv'){
       doc.autoTable({...base,startY:y,theme:'plain',body:b.items.map(([k,v])=>[txt(k),txt(v)]),
         columnStyles:{0:{textColor:MUTED,cellWidth:CW*0.4},1:{halign:'right',fontStyle:'bold'}},
@@ -1788,7 +1817,9 @@ async function buildLetter(c,L){
 }
 function formLetter(){
   const c=C(),people=c.shareholders.filter(p=>p.name);
+  let lastTpl='';
   const fields=[
+    {id:'tpl',label:'Template',type:'select',options:[['','Blank letter'],...Object.entries(LETTER_TPL).map(([k,t])=>[k,t.name])],value:''},
     {id:'to',label:'To',type:'select',options:[...people.map(p=>[p.id,`${p.name} (Share ${p.share})`]),['other','Someone else']],value:people[0]?people[0].id:'other'},
     {id:'toName',label:'Name',half:1,showIf:v=>v.to==='other'},
     {id:'toEmail',label:'Email',type:'email',half:1,showIf:v=>v.to==='other'},
@@ -1802,9 +1833,10 @@ function formLetter(){
   ];
   const collect=f=>{const {vals,err}=readForm(f,fields);if(err){$('#ferr').textContent=err;return null}const p=people.find(x=>x.id===vals.to);
     try{localStorage.setItem('pbk-sign-'+c.id,vals.signName);localStorage.setItem('pbk-signt-'+c.id,vals.signTitle)}catch(e){}
-    return {...vals,toName:p?p.name:vals.toName,toEmail:p?p.email:vals.toEmail}};
+    const v2={...vals,toName:p?p.name:vals.toName,toEmail:p?p.email:vals.toEmail};if(p){v2.body=letterFill(c,p,v2.body);v2.subject=letterFill(c,p,v2.subject)}return v2};
   const fname=L=>`${c.name} letter ${L.subject}`.replace(/[^\w\- ]+/g,'').replace(/\s+/g,' ').trim().slice(0,80)+'.pdf';
   openForm({title:`Letter · ${c.name}`,saveLabel:'Download PDF',fields,
+    onInput:f=>{const t=f.querySelector('#f_tpl');if(!t||t.value===lastTpl)return;lastTpl=t.value;const T=LETTER_TPL[t.value];if(!T)return;const pp=people.find(x=>x.id===f.querySelector('#f_to').value);const fl=x=>pp?letterFill(c,pp,x):x.replace(/\{company\}/g,c.name);f.querySelector('#f_subject').value=fl(T.subject);f.querySelector('#f_body').value=fl(T.body)},
     extraBtn:{label:'Email PDF',onClick:async f=>{const L=collect(f);if(!L)return;if(!L.toEmail){$('#ferr').textContent='This person has no email address.';return}
       toast('Making the letter…');try{const buf=await buildLetter(c,L);let bin='';const u=new Uint8Array(buf);for(let i=0;i<u.length;i+=32768)bin+=String.fromCharCode.apply(null,u.subarray(i,i+32768));
         const res=await api('sendEmail',{id:c.id,emails:[{to:L.toEmail,subject:L.subject+' · '+c.name,body:`Dear ${L.salutation||L.toName},\n\nPlease find attached our letter regarding ${L.subject}.\n\nKind regards,\n${L.signName||c.name}`}],attachment:{name:fname(L),mime:'application/pdf',base64:btoa(bin)}});
@@ -1932,8 +1964,8 @@ function openForm(cfg){
   $('#modal').hidden=false;document.body.classList.add('locked');
   const form=$('#form');
   form.onsubmit=e=>{e.preventDefault();const {vals,err}=readForm(form,cfg.fields);if(err){$('#ferr').textContent=err;return}
-    const r=cfg.onSave(vals);if(typeof r==='string'){$('#ferr').textContent=r;return}closeModal();commit();if(cfg.done)toast(cfg.done,true);goBack()};
-  if(cfg.onDelete){const b=$('#fdel');b.onclick=()=>{if(true){cfg.onDelete();closeModal();commit();toast('Deleted',true);goBack()}else{b.dataset.arm='1';b.textContent='Tap again to delete'}}}
+    const r=cfg.onSave(vals);if(typeof r==='string'){$('#ferr').textContent=r;return}audit(cfg.done||cfg.title);closeModal();commit();if(cfg.done)toast(cfg.done,true);goBack()};
+  if(cfg.onDelete){const b=$('#fdel');b.onclick=()=>{if(true){cfg.onDelete();audit('Deleted · '+cfg.title.replace(/^Edit /,''));closeModal();commit();toast('Deleted',true);goBack()}else{b.dataset.arm='1';b.textContent='Tap again to delete'}}}
   if(cfg.extraBtn){$('#fextra').onclick=()=>cfg.extraBtn.onClick(form)}
   if(cfg.fields.some(f=>f.showIf)){const ap=()=>{const {vals}=readForm(form,cfg.fields);cfg.fields.forEach(f=>{if(f.showIf){const w=form.querySelector('#w_'+f.id);if(w)w.hidden=!f.showIf(vals)}})};form.addEventListener('input',ap);form.addEventListener('change',ap);ap()}
   if(cfg.onInput){form.addEventListener('input',()=>cfg.onInput(form));form.addEventListener('change',()=>cfg.onInput(form));cfg.onInput(form)}
@@ -2055,9 +2087,12 @@ function formPerson(id,share){
     {id:'share',label:'Share',type:'select',options:[[1,'Share 1'],[2,'Share 2'],[3,'Share 3'],[4,'Share 4']],value:p?.share??share??1},
     {id:'email',label:'Email',type:'email',value:p?.email,auto:'off'},
     {id:'mobile',label:'Mobile (SMS)',type:'tel',value:p?.mobile,half:1,placeholder:'04xx xxx xxx'},
-    {id:'whatsapp',label:'WhatsApp number',type:'tel',value:p?.whatsapp,half:1,placeholder:'Same as mobile if blank'}
-  ],onSave:v=>{upsert(c.shareholders,p?.id,{name:v.name,share:Number(v.share),email:v.email,mobile:v.mobile,whatsapp:v.whatsapp})},
-  onDelete:p&&!has?()=>remove(c.shareholders,p.id):null});
+    {id:'whatsapp',label:'WhatsApp number',type:'tel',value:p?.whatsapp,half:1,placeholder:'Same as mobile if blank'},
+    {id:'notes',label:'Private notes',type:'textarea',rows:3,value:p?.notes,hint:'Only you see these. They are never sent to anyone.'}
+  ],onSave:v=>{const sh=Number(v.share);
+    if(!p)ownLog(c,`${v.name} joined Share ${sh}`);else if(p.share!==sh)ownLog(c,`${v.name} moved from Share ${p.share} to Share ${sh}`);else if(p.name!==v.name)ownLog(c,`${p.name} renamed to ${v.name}`);
+    upsert(c.shareholders,p?.id,{name:v.name,share:sh,email:v.email,mobile:v.mobile,whatsapp:v.whatsapp,notes:v.notes})},
+  onDelete:p&&!has?()=>{ownLog(c,`${p.name} removed from Share ${p.share}`);remove(c.shareholders,p.id)}:null});
 }
 function formContrib(id,pre={}){
   const c=C(),x=c.contributions.find(a=>a.id===id);
@@ -2067,7 +2102,7 @@ function formContrib(id,pre={}){
     {id:'amount',label:'Amount ($)',type:'number',value:x?.amount,half:1,required:1},
     {id:'type',label:'What it was for',type:'select',options:CONTRIB_TYPES,value:x?(catOf(x)==='Other'?x.type:catOf(x)):(pre.type||'Principal')},
     {id:'note',label:'Note',value:x?.note,placeholder:'e.g. Bank transfer, October repayment'}
-  ],onSave:v=>{const sid=Number(v.shareId);let pid=x?(x.personId||''):(pre.personId||'');const pp=c.shareholders.find(p=>p.id===pid);if(pp&&pp.share!==sid)pid='';upsert(c.contributions,x?.id,{...v,shareId:sid,personId:pid})},onDelete:x?()=>remove(c.contributions,x.id):null});
+  ],onSave:v=>{const sid=Number(v.shareId);let pid=x?(x.personId||''):(pre.personId||'');const pp=c.shareholders.find(p=>p.id===pid);if(pp&&pp.share!==sid)pid='';upsert(c.contributions,x?.id,{...v,shareId:sid,personId:pid});if(!x&&c.auto.receipts){const nx=c.contributions[c.contributions.length-1];setTimeout(()=>sendReceipt(c,nx),300)}},onDelete:x?()=>remove(c.contributions,x.id):null});
 }
 function formLoan(){
   const c=C(),l=c.loan,r=currentRate(c);
@@ -2275,7 +2310,9 @@ function openQuickAdd(){
     ${it('add-reminder','cal','Reminder','Recurring or one-off')}
     ${it('compose','mail','Group message','Email shareholders')}
     ${it('letter','doc','Letter','On the letterhead')}
-    ${it('add-stage','hammer','Construction stage','With a budget')}</div>`}]});
+    ${it('add-stage','hammer','Construction stage','With a budget')}
+    ${it('mt-add','cal','Meeting','Notice, attendance, minutes')}
+    ${it('bank-import','repeat','Import bank CSV','Match money in to people')}</div>`}]});
 }
 function searchIndex(){const out=[];
   COMPANIES.forEach(co=>{const c=state[co.id],nm=c.name;
@@ -2345,9 +2382,147 @@ function openShare(n,tab,pid){n=Number(n);if(tab)shTab=tab;if(pid!=null)shPid=pi
     <div class="shsec"><p class="setlabel">Paid in</p>
       <div class="setlist">${pays.map(x=>lrow('sh-pay',x.id,m2(x.amount),esc([fd(x.date),x.note].filter(Boolean).join(' · ')))).join('')||'<div class="empty">Nothing paid in yet.</div>'}</div>
       ${together?`<p class="muted small" style="margin-top:6px">Also ${m2(together)} paid by Share ${n} as a whole, not under one name.</p>`:''}
-      <button type="button" class="btn gold" data-act="sh-add-pay" data-n="${n}">Add ${cat.toLowerCase()} payment</button></div>`}]});
+      <button type="button" class="btn gold" data-act="sh-add-pay" data-n="${n}">Add ${cat.toLowerCase()} payment</button></div>
+    ${me.notes?`<div class="shnote"><b>Private note</b>${esc(me.notes)}</div>`:''}
+    <div class="shmore">
+      <button type="button" class="btn" data-act="sh-pdf" data-id="${me.id}">${icon('doc')}Statement PDF</button>
+      <button type="button" class="btn" data-act="sh-msgs" data-id="${me.id}">${icon('mail')}Messages (${msgsFor(c,me.id).length})</button>
+      <button type="button" class="btn" data-act="sh-edit" data-id="${me.id}">${icon('people')}Details and notes</button></div>`}]});
 }
 
+
+/* ---------- letter templates ---------- */
+const LETTER_TPL={
+  overdue:{name:'Payment overdue',subject:'Overdue payment – {company}',body:'We are writing about your payments for Share {share} of {company}.\n\nOur records show {owing} is still outstanding as at {date}.\n\nPlease arrange payment as soon as possible. If you have already paid, please let us know the date and amount so we can update our records.\n\nThank you for your help.'},
+  meeting:{name:'Meeting notice',subject:'Notice of shareholders meeting',body:'You are invited to a meeting of the shareholders of {company}.\n\nDate: \nTime: \nPlace: \n\nThe agenda will cover the project update, the loan and repayments, and any other business.\n\nPlease let us know if you can attend.'},
+  dividend:{name:'Dividend notice',subject:'Dividend notice – {company}',body:'We are pleased to advise that the directors have declared a dividend.\n\nYour Share {share} entitles you to {ownership} of the total amount. The dividend will be paid on or around [date] to your nominated account.\n\nPlease keep this letter for your tax records.'},
+  capital:{name:'Capital call',subject:'Request for additional funds – {company}',body:'The directors have resolved to ask shareholders for additional funds for the project.\n\nYour part for Share {share} ({ownership}) is $[amount], payable by [date].\n\nPlease contact us if you would like to discuss a payment plan.'},
+  welcome:{name:'Welcome to the company',subject:'Welcome to {company}',body:'Welcome to {company}. You now hold part of Share {share} ({ownership}).\n\nWe will send you a monthly summary of your payments. Each summary only includes your own figures.\n\nPlease keep your contact details up to date with us.'},
+  rate:{name:'Interest rate change',subject:'Interest rate change – {company}',body:'Our lender has changed the interest rate on the company loan.\n\nThis changes the monthly repayment, and so your monthly contribution for Share {share}. We will send your new monthly amount separately.\n\nPlease update any automatic transfers you have set up.'}};
+function letterFill(c,p,t){const S=statement(c,p,ymOf(iso(today())));const owing=Math.max(0,S.due-S.paid)+Math.max(0,S.earlier);const pct=+(25/c.shareholders.filter(q=>q.share===p.share).length).toFixed(2)+'%';
+  return String(t||'').replace(/\{name\}/g,p.name).replace(/\{share\}/g,p.share).replace(/\{company\}/g,c.name).replace(/\{ownership\}/g,pct).replace(/\{owing\}/g,m2(owing)).replace(/\{date\}/g,fd(iso(today()))).replace(/\{month\}/g,ymLabel(ymOf(iso(today()))))}
+/* ---------- payoff forecast ---------- */
+function amort(bal,rate,R,extra=0,lump=0){let b=bal-lump,m=0,int=0;const i=rate/100/12;if(b<=0)return {m:0,int:0};if(R+extra<=b*i+0.005)return null;while(b>0.005&&m<720){const it=b*i;int+=it;b=b+it-R-extra;m++}return {m,int}}
+function openForecast(){const c=C(),L=loanState(c);
+  if(!(L.bal>0)||!L.R){openForm({title:'Payoff forecast',noSave:1,fields:[{id:'x',type:'html',html:'<div class="empty">Add the loan amount, rate and monthly repayment in Setup → Loan setup first.</div>'}]});return}
+  const fields=[{id:'extra',label:'Extra each month ($)',type:'number',value:0,half:1},{id:'lump',label:'One-off extra now ($)',type:'number',value:0,half:1},{id:'out',type:'html',html:''}];
+  const show=f=>{const {vals}=readForm(f,fields);const base=amort(L.bal,L.rate,L.R),w=amort(L.bal,L.rate,L.R,num(vals.extra),num(vals.lump));
+    const end=m=>fd(iso(addMonths(today(),m,1))),yrs=m=>`${Math.floor(m/12)} yr ${m%12} mo`;
+    $('#f_out').innerHTML=!base?'<div class="empty">The repayment doesn\'t cover the interest, so the loan never gets paid off.</div>':`<div class="shkpis">
+      <div class="shk"><small>Balance now</small><b>${m0(L.bal)}</b></div><div class="shk"><small>Rate · repayment</small><b>${fpct(L.rate)} · ${m0(L.R)}</b></div>
+      <div class="shk"><small>Paid off (current pace)</small><b>${end(base.m)}</b><em>${yrs(base.m)}</em></div><div class="shk"><small>Interest to pay</small><b>${m0(base.int)}</b></div>
+      ${w&&(num(vals.extra)||num(vals.lump))?`<div class="shk ok"><small>Paid off with extra</small><b>${end(w.m)}</b><em>${yrs(base.m-w.m)} sooner</em></div><div class="shk ok"><small>Interest saved</small><b>${m0(base.int-w.int)}</b></div>`:''}</div>
+      <p class="muted small">Assumes today's rate stays the same. Per share, the repayment is ${m2(L.R/4)} a month.</p>`};
+  openForm({title:'Payoff forecast',noSave:1,noFocus:1,fields,onInput:show});setTimeout(()=>show($('#form')),0)}
+/* ---------- rate change tool ---------- */
+function openRateTool(){const c=C(),L=loanState(c);
+  const left=()=>{const b=amort(L.bal,L.rate,L.R);if(b)return b.m;const s=pd(c.loan.startDate);return s?Math.max(12,num(c.loan.termYears||25)*12-Math.round((today()-s)/2629800000)):300};
+  const fields=[{id:'rate',label:'New rate (% p.a.)',type:'number',step:'0.01',required:1,half:1,value:L.rate||''},{id:'date',label:'From',type:'date',value:iso(today()),half:1,required:1},
+    {id:'out',type:'html',html:''},
+    {id:'opts',label:'When you save',type:'checks',options:[['rate','Add this rate to the loan'],['repay','Change the loan repayment to the new amount'],['plans','Change everyone\'s monthly Principal and Interest amounts by the same %'],['tell','Email each shareholder their own new monthly amount']],value:['rate','repay','plans']}];
+  const calc=v=>{const n=left(),i=num(v.rate)/100/12,b=L.bal;const R=i?b*i/(1-Math.pow(1+i,-n)):b/n;return {n,R,ratio:L.R?R/L.R:1}};
+  const show=f=>{const {vals}=readForm(f,fields);if(!num(vals.rate)||!(L.bal>0)){$('#f_out').innerHTML='<p class="muted small">Enter the new rate. Loan details must be set up first.</p>';return}const k=calc(vals);
+    $('#f_out').innerHTML=`<div class="shkpis"><div class="shk"><small>Repayment now</small><b>${m2(L.R)}</b></div><div class="shk ${k.R>L.R?'warn':'ok'}"><small>New repayment</small><b>${m2(k.R)}</b><em>${k.R>=L.R?'+':''}${m2(k.R-L.R)}</em></div>
+      <div class="shk"><small>Per share</small><b>${m2(k.R/4)}</b></div><div class="shk"><small>Per person in Shares 3 and 4</small><b>${m2(k.R/12)}</b></div></div><p class="muted small">Same payoff date (${k.n} months left) on ${m0(L.bal)}.</p>`};
+  openForm({title:'Interest rate change',saveLabel:'Apply',done:'Rate change applied',fields,onInput:show,onSave:v=>{if(!num(v.rate))return 'Enter the new rate.';const k=calc(v),o=v.opts||[];
+    if(o.includes('rate'))c.loan.rates.push({id:uid(),date:v.date,rate:num(v.rate),note:'Rate change tool'});
+    if(o.includes('repay')&&L.bal>0)c.loan.repayment=Math.round(k.R*100)/100;
+    const changed=[];
+    if(o.includes('plans')&&L.R&&L.bal>0){const prev=iso(new Date(pd(v.date)-86400000));
+      c.plans.filter(x=>(x.cat==='Principal'||x.cat==='Interest')&&(!x.until||x.until>=v.date)).forEach(x=>{const amt=Math.round(num(x.amount)*k.ratio*100)/100;
+        if(x.from&&x.from>=v.date){x.amount=amt}else{x.until=prev;c.plans.push({...x,id:uid(),from:v.date,until:'',amount:amt,note:(x.note?x.note+' · ':'')+'after rate change'})}changed.push(x.personId||'s'+x.shareId)})}
+    if(o.includes('tell'))setTimeout(()=>{const list=c.shareholders.filter(p=>p.email).map(p=>{const pl=pPlans(c,p).filter(x=>planDue(x,ymOf(v.date)));const tot=sum(pl,x=>num(x.amount));
+      return {p,text:`Hi ${p.name},\n\nThe interest rate on the ${c.name} loan changes to ${fpct(num(v.rate))} p.a. from ${fd(v.date)}.\n\n${tot?`Your new monthly amount is ${m2(tot)} (${pl.map(x=>x.cat+' '+m2(x.amount)).join(', ')}).`:'Your monthly amount will be confirmed separately.'}\n\nPlease update any automatic transfers.\n\nThis message is just for you.\n\nKind regards,\n${c.name}`}});mailPeople(c,list,'Interest rate change','rate')},400)}});
+  setTimeout(()=>show($('#form')),0)}
+/* ---------- bank statement import ---------- */
+function parseCsv(t){const rows=[];let row=[],f='',q=false;for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch==='"'){if(t[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}else if(ch==='"')q=true;else if(ch===','){row.push(f);f=''}else if(ch==='\n'||ch==='\r'){if(ch==='\r'&&t[i+1]==='\n')i++;row.push(f);rows.push(row);row=[];f=''}else f+=ch}if(f||row.length){row.push(f);rows.push(row)}return rows.filter(r=>r.some(x=>x.trim()))}
+function csvDate(s){s=String(s).trim();let m;if(m=s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  if(m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/)){const y=m[3].length===2?'20'+m[3]:m[3];return `${y}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`}
+  const d=new Date(s);return isNaN(d)?'':iso(d)}
+function csvNum(s){const t=String(s||'').replace(/[$,\s]/g,'');if(!t)return 0;const neg=/^\(.*\)$/.test(t)||/-/.test(t)||/DR$/i.test(t);const v=parseFloat(t.replace(/[()\-]|CR|DR/gi,''));return isNaN(v)?0:(neg?-v:v)}
+let importRows=[];
+function readBankCsv(c,text){const R=parseCsv(text);if(!R.length)return [];const h=R[0].map(x=>x.toLowerCase());const hasHead=h.some(x=>/date|amount|desc|narr|detail|credit|debit|transaction/.test(x));
+  const col=re=>h.findIndex(x=>re.test(x));let di=0,ai=1,ti=2,ci=-1,dbi=-1,body=R;
+  if(hasHead){body=R.slice(1);di=Math.max(0,col(/date/));ai=col(/^amount|amount/);ci=col(/credit|deposit|money in/);dbi=col(/debit|withdraw|money out/);ti=col(/desc|narr|detail|transaction|memo|particular|reference/);if(ti<0)ti=h.findIndex((x,i)=>i!==di&&i!==ai&&i!==ci&&i!==dbi)}
+  const people=c.shareholders.map(p=>({p,toks:String(p.name).toLowerCase().split(/\s+/).filter(t=>t.length>=3)}));
+  return body.map(r=>{const date=csvDate(r[di]);let amt=ai>=0?csvNum(r[ai]):0;if(ci>=0&&csvNum(r[ci]))amt=Math.abs(csvNum(r[ci]));else if(dbi>=0&&csvNum(r[dbi]))amt=-Math.abs(csvNum(r[dbi]));
+    const desc=(r[ti]||'').trim(),dl=desc.toLowerCase();let best=null,sc=0;people.forEach(x=>{const s2=x.toks.filter(t=>dl.includes(t)).length;if(s2>sc){sc=s2;best=x.p}});
+    const cat=/interest/i.test(desc)?'Interest':/deposit/i.test(desc)?'Deposit':/council|water|rates|insur|outgo/i.test(desc)?'Outgoings':'Principal';
+    const dup=best&&c.contributions.some(x=>x.date===date&&Math.abs(num(x.amount)-amt)<0.005&&shareOf(c,x)===best.share);
+    return {id:uid(),date,amt,desc,pid:best?best.id:'',cat,on:!!best&&!dup,dup}}).filter(r=>r.date&&r.amt>0)}
+function importTable(c){const opts=c.shareholders.map(p=>`<option value="${p.id}">${esc(p.name)} (Share ${p.share})</option>`).join('');
+  return importRows.length?`<p class="muted small">${importRows.length} money-in rows found. ${importRows.filter(r=>r.on).length} matched to a shareholder. Check each one, then tap Add selected.</p><div class="imp">${importRows.map(r=>`<div class="impr${r.dup?' dup':''}">
+    <label class="impc"><input type="checkbox" data-imp="${r.id}" data-k="on" ${r.on?'checked':''}><span><b>${m2(r.amt)}</b> · ${fd(r.date)}<small>${esc(r.desc||'No description')}${r.dup?' · looks already recorded':''}</small></span></label>
+    <div class="impsel"><select data-imp="${r.id}" data-k="pid"><option value="">Who paid?</option>${opts.replace(`value="${r.pid}"`,`value="${r.pid}" selected`)}</select>
+    <select data-imp="${r.id}" data-k="cat">${[...SH_CATS,'Other'].map(k=>`<option${k===r.cat?' selected':''}>${k}</option>`).join('')}</select></div></div>`).join('')}</div>`:'<p class="muted small">Download a CSV of your transactions from your bank\'s website, then choose it here. Only money coming in is shown, and you check every match before anything is added.</p>'}
+function openImport(){const c=C();importRows=[];
+  openForm({title:'Import bank statement',saveLabel:'Add selected',done:'Payments added',fields:[{id:'f',type:'html',html:`<label class="btn filebtn">Choose CSV file<input type="file" id="csvf" accept=".csv,text/csv,text/plain" hidden></label><div id="imprs">${importTable(c)}</div>`}],
+    onSave:()=>{const sel=importRows.filter(r=>r.on);if(!sel.length)return 'Tick at least one row.';if(sel.some(r=>!r.pid))return 'Choose who paid for every ticked row.';
+      sel.forEach(r=>{const p=c.shareholders.find(x=>x.id===r.pid);c.contributions.push({id:uid(),date:r.date,amount:r.amt,shareId:p.share,personId:p.id,type:r.cat,note:'Bank: '+r.desc.slice(0,80)})});
+      if(c.auto.receipts)setTimeout(()=>sel.forEach((r,i)=>setTimeout(()=>sendReceipt(c,c.contributions.find(x=>x.date===r.date&&x.personId===r.pid&&Math.abs(x.amount-r.amt)<0.005)),i*200)),300)}});
+  const m=$('#modal');m.addEventListener('change',e=>{const t=e.target;if(t.id==='csvf'&&t.files[0]){const fr=new FileReader();fr.onload=()=>{importRows=readBankCsv(c,String(fr.result));$('#imprs').innerHTML=importTable(c);if(!importRows.length)toast('No money-in rows found in that file.')};fr.readAsText(t.files[0])}
+    else if(t.dataset.imp){const r=importRows.find(x=>x.id===t.dataset.imp);if(r)r[t.dataset.k]=t.type==='checkbox'?t.checked:t.value;if(t.dataset.k==='pid'&&t.value){r.on=true;const cb=m.querySelector(`input[data-imp="${r.id}"][data-k="on"]`);if(cb)cb.checked=true}}})}
+/* ---------- meetings ---------- */
+function vMeetings(c){const t=iso(today()),up=c.meetings.filter(m=>m.date>=t).sort(byDate),past=c.meetings.filter(m=>m.date<t).sort(byDate).reverse();
+  const card=m=>`<button type="button" class="setrow" data-act="mt-open" data-id="${m.id}">${icon('cal','sr-ic')}<span class="sr-t"><b>${esc(m.title||'Shareholders meeting')}</b><small>${fd(m.date)}${m.time?' · '+esc(m.time):''}${m.place?' · '+esc(m.place):''} · ${(m.attendees||[]).length} attending${m.minutes?' · minutes saved':''}</small></span><span class="chev">›</span></button>`;
+  return `<div class="pagehead"><div><h1>Shareholders</h1></div><div class="actions"><button class="btn gold" data-act="mt-add">New meeting</button></div></div>
+  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments'],['meetings','Meetings']])}
+  <div class="vscroll"><div class="setupgrid">
+  <section class="card setgrp"><header class="ch"><h2>Upcoming</h2></header><div class="setlist">${up.map(card).join('')||'<div class="empty">No meetings planned.</div>'}</div></section>
+  <section class="card setgrp"><header class="ch"><h2>Past</h2></header><div class="setlist">${past.map(card).join('')||'<div class="empty">No past meetings yet.</div>'}</div></section></div></div>`}
+function formMeeting(id){const c=C(),x=c.meetings.find(m=>m.id===id);const ppl=c.shareholders;
+  const fields=[{id:'title',label:'Title',value:x?.title??'Shareholders meeting',required:1},
+    {id:'date',label:'Date',type:'date',value:x?.date??iso(today()),half:1,required:1},{id:'time',label:'Time',type:'time',value:x?.time??'18:00',half:1},
+    {id:'place',label:'Place or online link',value:x?.place},{id:'agenda',label:'Agenda',type:'textarea',rows:4,value:x?.agenda??'1. Project update\n2. Loan and repayments\n3. Outgoings\n4. Other business'},
+    {id:'attendees',label:'Attending',type:'checks',options:ppl.map(p=>[p.id,`${p.name} (Share ${p.share})`]),value:x?.attendees??[]},
+    {id:'minutes',label:'Minutes (what was decided)',type:'textarea',rows:6,value:x?.minutes,placeholder:'Type the minutes after the meeting'}];
+  openForm({title:x?'Meeting':'New meeting',done:'Meeting saved',fields,
+    extraBtn:x?{label:'Notice or minutes',onClick:()=>{closeModal();navStack=[];openMeetingSend(x.id)}}:null,
+    onSave:v=>{upsert(c.meetings,x?.id,{title:v.title,date:v.date,time:v.time,place:v.place,agenda:v.agenda,attendees:v.attendees||[],minutes:v.minutes})},onDelete:x?()=>remove(c.meetings,x.id):null})}
+function meetingNotice(c,m,p){const t=m.time?new Date('2000-01-01T'+m.time).toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'}):'';
+  return `Hi ${p.name},\n\nYou are invited to a meeting of the shareholders of ${c.name}.\n\nDate: ${fd(m.date)}${t?'\nTime: '+t:''}${m.place?'\nPlace: '+m.place:''}\n\nAgenda:\n${m.agenda||'To be confirmed'}\n\nPlease reply to let us know if you can attend.\n\nKind regards,\n${c.name}`}
+function meetingModel(c,m){const att=m.attendees||[];return {cos:[c],kicker:'MINUTES',title:m.title||'Shareholders meeting',sub:`${c.name} · ${fd(m.date)}`,made:fd(today()),blocks:[
+  {type:'kv',title:'Meeting',items:[['Date',fd(m.date)],['Time',m.time||'—'],['Place',m.place||'—'],['Attending',`${att.length} of ${c.shareholders.length}`]]},
+  {type:'table',title:'Attendance',cols:['Name','Share','Attended'],rows:c.shareholders.map(p=>[p.name,'Share '+p.share,att.includes(p.id)?'Yes':'No']),empty:'No shareholders.'},
+  {type:'text',title:'Agenda',text:m.agenda||'—'},{type:'text',title:'Minutes',text:m.minutes||'No minutes recorded yet.'}]}}
+function openMeetingSend(id){const c=C(),m=c.meetings.find(x=>x.id===id);if(!m)return;
+  openForm({title:m.title||'Meeting',noSave:1,noFocus:1,fields:[{id:'a',type:'html',html:`<div class="setlist">
+    <button type="button" class="setrow" data-act="mt-notice" data-id="${m.id}"><span class="sr-t"><b>Send meeting notice</b><small>Each shareholder gets their own email. WhatsApp and SMS links follow.</small></span></button>
+    <button type="button" class="setrow" data-act="mt-pdf" data-id="${m.id}"><span class="sr-t"><b>Download minutes PDF</b><small>On the letterhead, with attendance.</small></span></button>
+    <button type="button" class="setrow" data-act="mt-email" data-id="${m.id}"><span class="sr-t"><b>Email minutes to everyone</b><small>PDF attached, sent to each person separately.</small></span></button>
+    <button type="button" class="setrow" data-act="mt-open" data-id="${m.id}"><span class="sr-t"><b>Edit meeting</b><small>Attendance, agenda and minutes.</small></span></button></div>`}]})}
+
+/* ---------- shareholder portal (read-only, own figures only) ---------- */
+let PORTAL=null,pIdx=0,pMonth=null;
+function startPortal(res){PORTAL=(res&&res.ok&&res.companies)||[];document.body.classList.add('portal');
+  let el=document.getElementById('portal');if(!el){el=document.createElement('div');el.id='portal';document.body.appendChild(el)}
+  el.addEventListener('click',e=>{const b=e.target.closest('[data-pa]');if(!b)return;const a=b.dataset.pa;
+    if(a==='co'){pIdx=Number(b.dataset.i);renderPortal()}else if(a==='m'){pMonth=addYm(pMonth,Number(b.dataset.k));renderPortal()}else if(a==='out')signOut();
+    else if(a==='pdf')portalPdf(b.dataset.per)});
+  pMonth=ymOf(iso(today()));renderPortal()}
+function portalC(){const x=PORTAL[pIdx];if(!x)return null;return {...x,shareholders:[x.person],plans:x.plans||[],contributions:x.contributions||[],messages:[],loan:{rates:[]}}}
+function renderPortal(){const el=$('#portal'),x=PORTAL[pIdx];
+  if(!x){el.innerHTML=`<div class="pwrap"><header class="phead"><img src="bkwik-logo.png" alt="" class="plogo"><div><b>B KWIK</b><small>${esc(authEmail)}</small></div><button class="btn sm" data-pa="out">Sign out</button></header><div class="card"><div class="empty">Nothing to show for this account yet.</div></div></div>`;return}
+  document.body.dataset.co=x.id;const c=portalC(),p=x.person,ym=pMonth,S=statement(c,p,ym);
+  const pays=[...c.contributions].sort(byDate).reverse(),plans=c.plans.filter(q=>!q.until||q.until>=iso(today()));
+  const kp=(l,v,cls='')=>`<div class="shk ${cls}"><small>${l}</small><b>${v}</b></div>`;
+  el.innerHTML=`<div class="pwrap">
+    <header class="phead"><img src="bkwik-logo.png" alt="" class="plogo"><div><b>Hi ${esc(p.name)}</b><small>${esc(authEmail)}</small></div><button class="btn sm" data-pa="out">Sign out</button></header>
+    ${PORTAL.length>1?`<div class="subtabs ptabs">${PORTAL.map((q,i)=>`<button type="button" data-pa="co" data-i="${i}" aria-selected="${i===pIdx}">${esc(q.name)}</button>`).join('')}</div>`:''}
+    <section class="card"><header class="ch"><h2>${esc(x.name)}</h2></header>
+      <p class="shsub" style="margin:4px 0 0">Share ${p.share} · ${p.pct}% · ${esc(x.land&&x.land.address||'')}</p></section>
+    <section class="card"><header class="ch stbar"><div class="mnav"><button class="icon-btn" data-pa="m" data-k="-1" aria-label="Previous month">‹</button><h2>${ymLabel(ym)}</h2><button class="icon-btn" data-pa="m" data-k="1" aria-label="Next month">›</button></div><span class="chip ${ST_CHIP[S.st]}">${ST_LABEL[S.st]}</span></header>
+      <div class="shkpis" style="margin-top:12px">${kp('Due this month',m2(S.due))+kp('Paid this month',m2(S.paid))+kp(S.diff<-0.005?'Still to pay':S.diff>0.005?'Extra paid':'Balance',m2(Math.abs(S.diff)),S.diff<-0.005?'warn':'ok')}${Math.abs(S.earlier)>0.005?kp(S.earlier>0?'Owing from earlier':'Ahead from earlier',m2(Math.abs(S.earlier)),S.earlier>0?'warn':'ok'):''}</div>
+      ${table([{l:'For'},{l:'Due',n:1},{l:'Paid',n:1},{l:'Status'}],S.rows.map(r=>({cells:[r.cat,m2(r.due),m2(r.paid),`<span class="chip ${ST_CHIP[r.st]}">${ST_LABEL[r.st]}</span>`]})),{empty:'No monthly amount set and nothing paid this month.'})}</section>
+    <section class="card"><header class="ch"><h2>Your monthly amounts</h2></header>
+      ${table([{l:'For'},{l:'Amount',n:1},{l:'Day'},{l:'From'}],plans.map(q=>({cells:[q.cat,m2(q.amount),String(q.day||1),q.from?fd(q.from):'—']})),{empty:'No monthly amounts set.'})}</section>
+    <section class="card"><header class="ch"><h2>Your payments</h2></header>
+      ${table([{l:'Date'},{l:'For'},{l:'Amount',n:1}],pays.slice(0,60).map(q=>({cells:[fd(q.date),catOf(q)==='Other'?esc(q.type||'Other'):catOf(q),m2(q.amount)]})),{empty:'No payments recorded yet.',foot:pays.length?['Total','',m2(sum(pays,q=>q.amount))]:null})}</section>
+    <section class="card"><header class="ch"><h2>Statements</h2></header><div class="stsend">
+      <button class="btn" data-pa="pdf" data-per="month">This month PDF</button><button class="btn" data-pa="pdf" data-per="fy">This financial year</button><button class="btn" data-pa="pdf" data-per="lastfy">Last financial year</button><button class="btn" data-pa="pdf" data-per="all">All time</button></div></section>
+    <p class="muted small pfoot">You can only see your own figures. Questions? Email ${esc(x.email||'')}.</p></div>`}
+async function portalPdf(per){const c=portalC(),p=PORTAL[pIdx].person;stMonth=pMonth;toast('Making your statement…');
+  try{const M=statementModel(c,p,per);const buf=await buildPdf(M);saveFile(buf,fileSafe(`${c.name} statement ${p.name} ${M.sub.split(' · ').pop()}`)+'.pdf','application/pdf')}catch(e){toast('Could not make the PDF.')}}
 /* ---------- monthly statements per person ---------- */
 const ST_LABEL={paid:'Paid',partial:'Partly paid',none:'Not paid',extra:'Extra paid',noplan:'No monthly amount'};
 const ST_CHIP={paid:'ok',partial:'warn',none:'bad',extra:'info',noplan:''};
@@ -2382,7 +2557,7 @@ function vMonthly(c){if(!stMonth)stMonth=ymOf(iso(today()));const ym=stMonth;
   const cnt=k=>list.filter(S=>S.st===k).length;
   const sub=(S)=>S.earlier>0.005?`<small class="bad-t">+${m2(S.earlier)} from earlier</small>`:S.earlier<-0.005?`<small class="ok-t">${m2(-S.earlier)} ahead</small>`:'';
   return `<div class="pagehead"><div><h1>Shareholders</h1></div></div>
-  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments']])}
+  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments'],['meetings','Meetings']])}
   <div class="vscroll">
   <section class="card"><header class="ch stbar"><div class="mnav"><button class="icon-btn" data-act="st-month" data-k="-1" aria-label="Previous month">‹</button><h2>${ymLabel(ym)}</h2><button class="icon-btn" data-act="st-month" data-k="1" aria-label="Next month">›</button></div>
     <button class="btn gold" data-act="st-send-all">Send to everyone</button></header>
@@ -2421,6 +2596,72 @@ function formSendAll(){const c=C(),ym=stMonth;
     onInput:f=>{const {vals}=readForm(f,fields);const ps=pick(vals);$('#f_pv').innerHTML=`<p class="muted small">${ps.length} ${ps.length===1?'person':'people'}: ${esc(ps.map(p=>p.name).join(', ')||'nobody')}${vals.channels.includes('email')&&ps.some(p=>!p.email)?` · no email for ${esc(ps.filter(p=>!p.email).map(p=>p.name).join(', '))}`:''}</p>`},
     onSave:v=>{if(!v.channels.length)return 'Choose at least one way to send.';const ps=pick(v);if(!ps.length)return 'Nobody matches. Pick a different Send to option.';stSend(c,ps,v.channels)}});
 }
+
+/* ---------- admin pack: helpers ---------- */
+function devName(){const u=navigator.userAgent;return /iPhone/.test(u)?'iPhone':/iPad/.test(u)?'iPad':/Android/.test(u)?'Android':/Mac/.test(u)?'Mac':/Windows/.test(u)?'Windows PC':'Browser'}
+function audit(what){const c=state[cur];if(!c||!c.audits)return;c.audits.push({id:uid(),t:new Date().toISOString(),what:String(what||'Change'),dev:devName()});if(c.audits.length>300)c.audits.splice(0,c.audits.length-300)}
+function ownLog(c,text,date){c.ownership.push({id:uid(),date:date||iso(today()),text})}
+function u8b64(buf){let bin='';const u=new Uint8Array(buf);for(let i=0;i<u.length;i+=32768)bin+=String.fromCharCode.apply(null,u.subarray(i,i+32768));return btoa(bin)}
+async function saveFile(data,name,mime){const file=new File([data],name,{type:mime});
+  if(navigator.canShare&&navigator.canShare({files:[file]})&&/iPhone|iPad|Android/i.test(navigator.userAgent)){try{await navigator.share({files:[file],title:name});return}catch(e){if(e&&e.name==='AbortError')return}}
+  const url=URL.createObjectURL(file),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);toast('Saved '+name)}
+function msgsFor(c,pid){return c.messages.filter(m=>(m.recipients||[]).some(r=>r.personId===pid))}
+function fileSafe(s){return String(s).replace(/[^\w\- ]+/g,'').replace(/\s+/g,' ').trim().slice(0,80)}
+async function mailPeople(c,list,subject,source,attachment){ // list: [{p,text}]
+  const withEmail=list.filter(x=>x.p.email);if(!withEmail.length){toast('Nobody here has an email address saved.');return null}
+  try{const res=await api('sendEmail',{id:c.id,emails:withEmail.map(x=>({to:x.p.email,subject:`${subject} · ${c.name}`,body:x.text})),attachment});
+    if(!res.ok){toast('Email failed: '+res.error);return null}
+    c.messages.push({id:uid(),date:iso(today()),subject,body:list.length===1?list[0].text:'Individual messages',audience:'statements',channels:['email'],emailed:res.sent,emailFrom:res.from,source,
+      recipients:list.map(x=>({personId:x.p.id,name:x.p.name,email:x.p.email,text:x.text,missing:x.p.email?[]:['email']}))});commit();
+    toast(`Emailed ${res.sent} ${res.sent===1?'person':'people'}`);return res}
+  catch(e){toast('Email failed. Check your internet connection.');return null}}
+/* receipts */
+function sendReceipt(c,x){if(!x)return;const n=shareOf(c,x);const who=x.personId?c.shareholders.filter(p=>p.id===x.personId):c.shareholders.filter(p=>p.share===n);
+  const list=who.filter(p=>p.email).map(p=>({p,text:`Hi ${p.name},\n\nThank you. We have received ${m2(x.amount)} for ${catOf(x)==='Other'?(x.type||'your share'):catOf(x)} on ${fd(x.date)}${x.personId?'':` from Share ${n}`}.${x.note?'\nNote: '+x.note:''}\n\nThis receipt is just for you.\n\nKind regards,\n${c.name}`}));
+  if(list.length)mailPeople(c,list,'Payment received','receipt')}
+/* per-person message log */
+function openPersonMsgs(pid){const c=C(),p=c.shareholders.find(x=>x.id===pid);if(!p)return;const ms=msgsFor(c,pid).sort(byDate).reverse();
+  openForm({title:`Messages to ${p.name}`,noSave:1,noFocus:1,fields:[{id:'m',type:'html',html:`<div class="setlist">${ms.map(m=>lrow('pm-view',m.id,esc(m.subject),esc(`${fd(m.date)} · ${(m.channels||[]).map(chLabel).join(', ')}${m.auto?' · automatic':''}`))).join('')||'<div class="empty">Nothing sent to this person yet.</div>'}</div>`}]});}
+function viewPersonMsg(mid){const c=C(),m=c.messages.find(x=>x.id===mid);const pid=shPid;const r=m&&(m.recipients||[]).find(x=>x.personId===pid);if(!r)return;
+  openForm({title:m.subject,noSave:1,noFocus:1,intro:`Sent ${fd(m.date)} to ${esc(r.name)}${r.email?' · '+esc(r.email):''}`,fields:[{id:'t',type:'html',html:`<pre class="stmsg">${esc(r.text||m.body||'')}</pre>`}]})}
+/* statement PDF */
+function periodRange(c,p,per){const t=today(),ymNow=ymOf(iso(t));
+  if(per==='month'){const ym=stMonth||ymNow,[f,l]=mRange(ym);return {f,l,label:ymLabel(ym)}}
+  if(per==='fy'||per==='lastfy'){const e=fyOf(iso(t))-(per==='lastfy'?1:0);return {f:`${e-1}-07-01`,l:`${e}-06-30`,label:`Financial year ${e-1}-${String(e).slice(2)}`}}
+  const ds=[...pPlans(c,p).map(x=>x.from).filter(Boolean),...pPays(c,p).map(x=>x.date).filter(Boolean)].sort();return {f:ds[0]||iso(t),l:iso(t),label:'All time'}}
+function statementModel(c,p,per){const R=periodRange(c,p,per),plans=pPlans(c,p),pays=pPays(c,p).filter(x=>x.date>=R.f&&x.date<=R.l).sort(byDate);
+  const months=[];for(let k=ymOf(R.f);k<=ymOf(R.l);k=addYm(k,1))months.push(k);
+  const rows=SH_CATS.map(cat=>{const due=sum(months,ym=>sum(plans.filter(x=>x.cat===cat),x=>planDue(x,ym)));const paid=sum(pays.filter(x=>catOf(x)===cat),x=>x.amount);return [cat,m2(due),m2(paid),(paid-due>=0?'+':'-')+m2(Math.abs(paid-due)),due,paid]}).filter(r=>r[4]||r[5]);
+  const other=sum(pays.filter(x=>catOf(x)==='Other'),x=>x.amount);if(other)rows.push(['Other',m2(0),m2(other),'+'+m2(other),0,other]);
+  const due=sum(rows,r=>r[4]),paid=sum(rows,r=>r[5]),S=statement(c,p,ymOf(R.f));
+  return {cos:[c],kicker:'STATEMENT',title:'Shareholder statement',sub:`${p.name} · Share ${p.share} · ${R.label}`,made:fd(today()),blocks:[
+    {type:'kv',title:'Summary',items:[['Shareholder',p.name],['Share',`Share ${p.share} (${+(25/c.shareholders.filter(q=>q.share===p.share).length).toFixed(2)}%)`],['Period',`${fd(R.f)} to ${fd(R.l)}`],['Due in this period',m2(due)],['Paid in this period',m2(paid)],[paid-due>=0?'Paid ahead':'Still to pay',m2(Math.abs(paid-due))],...(per!=='all'&&Math.abs(S.earlier)>0.005?[[S.earlier>0?'Owing from before this period':'Ahead from before this period',m2(Math.abs(S.earlier))]]:[])]},
+    {type:'table',title:'By type',cols:['Type','Due','Paid','Difference'],num:[1,2,3],rows:rows.map(r=>r.slice(0,4)),foot:['Total',m2(due),m2(paid),(paid-due>=0?'+':'-')+m2(Math.abs(paid-due))],empty:'Nothing due or paid in this period.'},
+    {type:'table',title:'Payments received',cols:['Date','Type','Amount','Note'],num:[2],rows:pays.map(x=>[fd(x.date),catOf(x)==='Other'?(x.type||'Other'):catOf(x),m2(x.amount),x.note||'']),empty:'No payments in this period.'},
+    {type:'table',title:'Monthly amounts',cols:['Type','Amount','Day','From','Until'],num:[1],rows:plans.map(x=>[x.cat,m2(x.amount),String(x.day||1),x.from?fd(x.from):'—',x.until?fd(x.until):'Ongoing']),empty:'No monthly amounts set.'}]};}
+function openStatementPdf(pid){const c=C(),p=c.shareholders.find(x=>x.id===pid);if(!p)return;
+  const fields=[{id:'per',label:'Period',type:'select',options:[['month',`Month: ${ymLabel(stMonth||ymOf(iso(today())))}`],['fy','This financial year'],['lastfy','Last financial year (for tax)'],['all','All time']],value:'fy'}];
+  const make=async per=>{toast('Making the statement…');const M=statementModel(c,p,per);return {M,buf:await buildPdf(M),name:fileSafe(`${c.name} statement ${p.name} ${M.sub.split(' · ').pop()}`)+'.pdf'}};
+  openForm({title:`Statement · ${p.name}`,saveLabel:'Download PDF',fields,intro:'Only this person\'s own figures are in the statement.',
+    extraBtn:{label:p.email?'Email to '+p.name:'No email saved',onClick:async f=>{if(!p.email){$('#ferr').textContent='Add an email for this person on the Setup page first.';return}
+      const {vals}=readForm(f,fields);try{const {M,buf,name}=await make(vals.per);const res=await mailPeople(c,[{p,text:`Hi ${p.name},\n\nPlease find attached your statement (${M.sub.split(' · ').pop()}).\n\nThis statement is just for you.\n\nKind regards,\n${c.name}`}],'Your statement','statement',{name,mime:'application/pdf',base64:u8b64(buf)});if(res)closeModal()}catch(e){toast('Could not make the statement.')}}},
+    onSave:v=>{(async()=>{try{const {buf,name}=await make(v.per);saveFile(buf,name,'application/pdf')}catch(e){toast('Could not make the statement.')}})()}});}
+/* automatic emails settings */
+function formAuto(){const c=C(),a=c.auto,days=[[0,'Off'],...Array.from({length:28},(_,i)=>[i+1,`On the ${i+1}${['th','st','nd','rd'][((i+1)%100-20)%10]||['th','st','nd','rd'][(i+1)%100]||'th'} of each month`])];
+  openForm({title:'Automatic emails',done:'Automatic emails saved',intro:'These are sent from the company email at about 8am each day, even when the app is closed. Each shareholder only ever gets their own figures.',fields:[
+    {id:'statementDay',label:'Monthly summary to each shareholder',type:'select',options:days,value:a.statementDay},
+    {id:'statementWho',label:'Who gets the summary',type:'select',options:[['plan','Everyone with a monthly amount'],['owing','Only people not fully paid'],['all','Every shareholder']],value:a.statementWho,showIf:v=>Number(v.statementDay)>0},
+    {id:'overdueDays',label:'Overdue reminder',type:'select',options:[[0,'Off'],[1,'1 day after their due day'],[3,'3 days after'],[5,'5 days after'],[7,'7 days after']],value:a.overdueDays},
+    {id:'receipts',label:'Receipt when a payment is recorded',type:'select',options:[['1','On'],['','Off']],value:a.receipts?'1':''},
+    {id:'loanAlertDays',label:'Loan repayment alert to you',type:'select',options:[[0,'Off'],[1,'1 day before'],[3,'3 days before'],[5,'5 days before'],[7,'7 days before']],value:a.loanAlertDays},
+    {id:'billAlertDays',label:'Bill reminders due soon, alert to you',type:'select',options:[[0,'Off'],[1,'1 day before'],[3,'3 days before'],[7,'7 days before'],[14,'14 days before']],value:a.billAlertDays},
+    {id:'backup',label:'Backup emailed to you',type:'select',options:[['','Off'],['weekly','Every Monday']],value:a.backup}
+  ],onSave:v=>{c.auto={statementDay:Number(v.statementDay),statementWho:v.statementWho||'plan',overdueDays:Number(v.overdueDays),receipts:!!v.receipts,loanAlertDays:Number(v.loanAlertDays),billAlertDays:Number(v.billAlertDays),backup:v.backup}}});}
+/* histories */
+function openOwnership(){const c=C();listModal('Ownership history',[...c.ownership].sort(byDate).reverse().map(o=>lrow('own-edit',o.id,esc(o.text),fd(o.date))),'own-add','Add a change')}
+function formOwn(id){const c=C(),x=c.ownership.find(o=>o.id===id);openForm({title:x?'Edit change':'Add ownership change',done:'Saved',fields:[{id:'date',label:'Date',type:'date',value:x?.date??iso(today()),required:1},{id:'text',label:'What changed',value:x?.text,required:1,placeholder:'e.g. Kiran sold half his part to Suresh'}],onSave:v=>{upsert(c.ownership,x?.id,{date:v.date,text:v.text})},onDelete:x?()=>remove(c.ownership,x.id):null})}
+function openAudit(){const c=C();const rows=[...c.audits].reverse().slice(0,150).map(a=>{const d=new Date(a.t);return `<div class="aud"><b>${esc(a.what)}</b><small>${d.toLocaleDateString('en-AU',{day:'numeric',month:'short',year:'numeric'})} ${d.toLocaleTimeString('en-AU',{hour:'numeric',minute:'2-digit'})} · ${esc(a.dev||'')}</small></div>`}).join('');
+  openForm({title:'Change history',noSave:1,noFocus:1,intro:'Every save and delete, newest first. Use Undo to reverse the last change.',fields:[{id:'a',type:'html',html:`<div class="audlist">${rows||'<div class="empty">No changes recorded yet.</div>'}</div>`}]})}
 function formPlan(n,id){const c=C(),x=c.plans.find(p=>p.id===id);n=x?Number(x.shareId):Number(n);const cat=x?x.cat:shTab,pid=x?(x.personId||''):shPid,who=(c.shareholders.find(p=>p.id===pid)||{}).name;
   openForm({title:`${x?'Edit':'Set'} monthly ${cat.toLowerCase()} · ${who||'Share '+n}`,done:'Monthly contribution saved',fields:[
     {id:'amount',label:'Amount each month ($)',type:'number',value:x?.amount,half:1,required:1},
@@ -2432,6 +2673,7 @@ function formPlan(n,id){const c=C(),x=c.plans.find(p=>p.id===id);n=x?Number(x.sh
     upsert(c.plans,x?.id,{shareId:n,personId:pid,cat,amount:num(v.amount),day:Number(v.day),from:v.from,until:v.until||'',note:v.note})},
   onDelete:x?()=>remove(c.plans,x.id):null});
 }
+function autoSummary(c){const a=c.auto,on=[a.statementDay?'monthly summary':'',a.overdueDays?'overdue':'',a.receipts?'receipts':'',a.loanAlertDays?'loan alert':'',a.billAlertDays?'bill alerts':'',a.backup?'backup':''].filter(Boolean);return on.length?'On: '+on.join(', '):'All off'}
 function vSetup(c){const l=c.land,L=loanState(c);
   const row=(act,ic,t,sub,cls='')=>`<button type="button" class="setrow ${cls}" data-act="${act}">${icon(ic,'sr-ic')}<span class="sr-t"><b>${t}</b><small>${sub}</small></span><span class="chev" aria-hidden="true">›</span></button>`;
   const grp=(t,inner)=>`<section class="card setgrp"><header class="ch"><h2>${t}</h2></header><div class="setlist">${inner}</div></section>`;
@@ -2442,6 +2684,7 @@ function vSetup(c){const l=c.land,L=loanState(c);
   ${grp('Shareholders',row('set-people','people','Shareholders and contacts',`${c.shareholders.length} people in 4 shares`))}
   ${grp('Banks and utilities',row('set-banks','repeat','Banks',`${allBanks(c).length} banks · ${c.banks.length} yours`)+row('set-utils','drop','Utility types',`${UTIL_TYPES.length+c.utilityTypes.length} types`))}
   ${grp('Construction',row('set-stages','hammer','Construction stages',`${c.stages.length} stages`))}
+  ${grp('Automation and records',row('set-auto','mail','Automatic emails',autoSummary(c))+row('bank-import','repeat','Import bank statement','Match money in from a CSV file to shareholders')+row('set-own','people','Ownership history',`${c.ownership.length} changes recorded`)+row('set-audit','doc','Change history',`${c.audits.length} changes recorded`))}
   ${c.sample?grp('Data',row('set-clear','doc','Clear sample data','','danger')):''}
   </div></div>`;
 }
@@ -2466,7 +2709,15 @@ function openStageList(){const c=C();listModal('Construction stages',c.stages.ma
 
 /* ---------- events ---------- */
 const fromSetup=fn=>{navStack=[];fn()};
-const ST_ACTIONS={'st-month':d=>{stMonth=addYm(stMonth||ymOf(iso(today())),Number(d.k));render()},'st-open':d=>{navStack=[];openStatement(d.id)},'st-send-all':()=>{navStack=[];formSendAll()},
+const ST_ACTIONS={'forecast':()=>{navStack=[];openForecast()},'rate-tool':()=>{navStack=[];openRateTool()},'bank-import':()=>{navStack=[];openImport()},
+  'mt-add':()=>{navStack=[];formMeeting()},'mt-open':d=>{navStack=[];formMeeting(d.id)},
+  'mt-notice':d=>{const c=C(),m=c.meetings.find(x=>x.id===d.id);closeModal();const recips=c.shareholders.map(p=>({personId:p.id,name:p.name,email:p.email,mobile:p.mobile,whatsapp:p.whatsapp||p.mobile,missing:p.email?[]:['email'],text:meetingNotice(c,m,p)}));
+    const msg={id:uid(),date:iso(today()),subject:'Meeting notice: '+(m.title||'Shareholders meeting'),body:m.agenda||'',audience:'all',channels:['email','whatsapp'],recipients:recips,source:'meeting'};c.messages.push(msg);commit();deliver(c,msg)},
+  'mt-pdf':async d=>{const c=C(),m=c.meetings.find(x=>x.id===d.id);toast('Making the minutes…');try{saveFile(await buildPdf(meetingModel(c,m)),fileSafe(`${c.name} minutes ${m.date}`)+'.pdf','application/pdf')}catch(e){toast('Could not make the PDF.')}},
+  'mt-email':async d=>{const c=C(),m=c.meetings.find(x=>x.id===d.id);toast('Making the minutes…');try{const buf=await buildPdf(meetingModel(c,m));closeModal();
+    await mailPeople(c,c.shareholders.map(p=>({p,text:`Hi ${p.name},\n\nPlease find attached the minutes of the ${m.title||'shareholders meeting'} held on ${fd(m.date)}.\n\nKind regards,\n${c.name}`})),'Meeting minutes','minutes',{name:fileSafe(`${c.name} minutes ${m.date}`)+'.pdf',mime:'application/pdf',base64:u8b64(buf)})}catch(e){toast('Could not make the PDF.')}},
+'sh-pdf':d=>{const pid=shPid;child(()=>openShare(C().shareholders.find(p=>p.id===pid)?.share||1,null,pid),()=>openStatementPdf(d.id))},'sh-msgs':d=>{const pid=shPid;child(()=>openShare(C().shareholders.find(p=>p.id===pid)?.share||1,null,pid),()=>openPersonMsgs(d.id))},'pm-view':d=>{const pid=shPid;child(()=>openPersonMsgs(pid),()=>viewPersonMsg(d.id))},'sh-edit':d=>{const pid=shPid;child(()=>openShare(C().shareholders.find(p=>p.id===pid)?.share||1,null,pid),()=>formPerson(d.id))},
+  'set-auto':()=>fromSetup(formAuto),'set-own':()=>fromSetup(openOwnership),'own-add':()=>child(openOwnership,()=>formOwn()),'own-edit':d=>child(openOwnership,()=>formOwn(d.id)),'set-audit':()=>fromSetup(openAudit),'st-month':d=>{stMonth=addYm(stMonth||ymOf(iso(today())),Number(d.k));render()},'st-open':d=>{navStack=[];openStatement(d.id)},'st-send-all':()=>{navStack=[];formSendAll()},
   'st-email':d=>{const c=C(),p=c.shareholders.find(x=>x.id===d.id);if(p){closeModal();navStack=[];stSend(c,[p],['email'])}},
   'st-copy':d=>{const c=C(),p=c.shareholders.find(x=>x.id===d.id);const t=stText(c,statement(c,p,stMonth),stMonth);try{navigator.clipboard.writeText(t).then(()=>toast('Copied'),()=>toast('Copy was blocked'))}catch(e){toast('Copy was blocked')}}};
 const ACTIONS={
@@ -2554,7 +2805,7 @@ function signOut(){try{localStorage.removeItem('pbk-token')}catch(e){}authToken=
 /* ---------- multi-device sync ---------- */
 let base={},lastSync=0,retryT=null;
 const coOf=id=>COMPANIES.find(x=>x.id===id);
-const COLLS=['shareholders','contributions','plans','payments','expenses','stages','reminders','messages'];
+const COLLS=['shareholders','contributions','plans','payments','expenses','stages','reminders','messages','ownership','meetings','audits'];
 const js=x=>JSON.stringify(x===undefined?null:x);
 function mergeArr(b,l,r){b=b||[];l=l||[];r=r||[];
   const B=new Map(b.map(x=>[x.id,js(x)])),L=new Map(l.map(x=>[x.id,x])),R=new Map(r.map(x=>[x.id,x]));
@@ -2650,6 +2901,9 @@ function hideSplash(){const sp=$('#splash');if(sp){sp.classList.add('out');setTi
   if(!CFG.scriptUrl||!CFG.clientId){await splashDone;hideSplash();showGate('');$('#gatemsg').textContent='Setup is not finished: add the Apps Script link and Google client ID to config.js.';return}
   try{const t=localStorage.getItem('pbk-token');if(t&&tokenExp(t)>Date.now()+60000){authToken=t;authEmail=tokenEmail(t)}}catch(e){}
   if(!authToken){await splashDone;hideSplash();await signIn(true)}
+  let who=null;try{who=await api('whoami',{})}catch(e){}
+  if(who&&!who.ok&&/NOACCESS|not set up|not allowed/i.test(who.error||'')){await splashDone;hideSplash();showGate('');$('#gatemsg').innerHTML=esc(String(who.error).replace(/^NOACCESS:\s*/,''))+'<br><button type="button" class="gatealt" onclick="signOut()">Use a different account</button>';return}
+  if(who&&who.ok&&who.role==='shareholder'){const pr=api('portal',{});await splashDone;hideSplash();startPortal(await pr);return}
   db=true;setStatus('busy','Loading…');
   try{await Promise.all([reloadAll(),splashDone]);hideSplash();setStatus('ok',syncLabel())}
   catch(e){hideSplash();setStatus('off','Could not load saved data');toast('Could not load your data: '+e.message)}
