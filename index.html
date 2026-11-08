@@ -921,6 +921,27 @@ body[data-mode="dark"] .clock .cdl{color:#fff!important;opacity:.88}
 .topacts{align-items:center}
 .topacts .gear,.topacts .undo-btn{margin:0!important}
 .topright .clock{-webkit-font-smoothing:antialiased;text-rendering:geometricPrecision}
+/* six-item bottom bar */
+.bnav{grid-template-columns:repeat(6,1fr)!important}
+@media (max-width:860px){.bnav button span{font-size:10px;letter-spacing:0}}
+/* setup page */
+.setupgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;align-items:start}
+.setgrp .setlist{margin:0}
+.setgrp .setrow .sr-t{flex:1;text-align:left;align-items:flex-start}
+.setrow .sr-ic{width:22px;height:22px;flex:none;color:var(--gold);fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;margin-right:4px}
+body[data-mode="dark"] .setrow .sr-ic{color:var(--third)}
+@media (max-width:860px){.setupgrid{grid-template-columns:1fr;gap:10px}}
+/* share popup */
+.shtabs{grid-template-columns:repeat(4,1fr)!important;margin-bottom:12px}
+.shtabs button{font-size:13px;padding:8px 2px}
+.shkpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:6px}
+.shk{padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--glass) 40%,transparent);border:1px solid color-mix(in srgb,var(--glass) 70%,transparent)}
+.shk small{display:block;font-size:12px;color:var(--muted)}.shk b{font-size:18px;color:var(--navy)}.shk em{font-style:normal;font-size:12px;font-weight:500;color:var(--muted);margin-left:2px}
+.shk.warn b{color:#b5632a}.shk.ok b{color:#2e7d5b}
+body[data-mode="dark"] .shk b{color:var(--third)}body[data-mode="dark"] .shk.warn b{color:#f0a36b}body[data-mode="dark"] .shk.ok b{color:#7fd6a8}
+@media (max-width:600px){.shkpis{grid-template-columns:repeat(auto-fit,minmax(96px,1fr));gap:6px}.shk{padding:8px 10px}.shk small{font-size:11px}.shk b{font-size:15px}.shk em{font-size:11px}}
+.shsec{margin-top:12px}.shsec .btn{margin-top:8px;width:100%}
+.member small{opacity:.75}
 @media (prefers-reduced-motion:reduce){.view.enter > *{animation:none}.sk{animation:none}}
 @media (prefers-reduced-motion:reduce){.sp-logo,.sp-logo img,.sp-name span,.sp-line,.sp-sub{animation-duration:.01s!important;animation-delay:0s!important}.sp-line{width:180px}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
@@ -969,6 +990,7 @@ const COMPANIES=[
   {id:'kwik',name:'KWIK TRIP'}
 ];
 const ICONS={
+  setup:'<path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/>',
   overview:'<rect x="3" y="3" width="7.5" height="9" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="5" rx="1.5"/><rect x="13.5" y="11" width="7.5" height="10" rx="1.5"/><rect x="3" y="15" width="7.5" height="6" rx="1.5"/>',
   holders:'<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.6c2.6.2 4.6 1.9 5.3 4.9"/>',
   mortgage:'<path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/>',
@@ -981,6 +1003,7 @@ const ICONS={
 };
 const SECTIONS=[
   {id:'overview',label:'Dashboard'},
+  {id:'setup',label:'Setup'},
   {id:'holders',label:'Shareholders'},
   {id:'mortgage',label:'Mortgage'},
   {id:'outgoings',label:'Outgoings'},
@@ -992,7 +1015,9 @@ const WORK_CATS=['Stamp duty','Legal & conveyancing','DA Approvals & permits','A
 const PAY_TYPES=[['regular','Regular repayment (principal + interest)'],['extra','Extra payment (principal only)'],['interest','Interest-only payment'],['fee','Bank fee or charge']];
 const payTypeLabel=t=>({regular:'Regular',extra:'Extra principal',interest:'Interest only',fee:'Bank fee'}[t||'regular']||'Regular');
 const COMMON_BANKS=['Commonwealth Bank','Westpac','NAB','ANZ','Macquarie Bank','Bank of Queensland','Suncorp Bank','Bendigo Bank','ING','St.George','Heritage and People\'s Choice','Great Southern Bank','HSBC','Judo Bank','Bankwest','AMP Bank','Rabobank'];
-const CONTRIB_TYPES=['Deposit','Loan repayment','Expense','Construction','Other'];
+const CONTRIB_TYPES=['Deposit','Principal','Interest','Outgoings','Other'];
+const SH_CATS=['Deposit','Principal','Interest','Outgoings'];
+function catOf(x){const t=String(x.type||'');if(t==='Deposit')return 'Deposit';if(t==='Principal'||t==='Loan repayment')return 'Principal';if(t==='Interest')return 'Interest';if(t==='Outgoings'||t==='Expense'||t==='Construction')return 'Outgoings';return 'Other'}
 const EXP_CATS=['Stamp duty','Legal & conveyancing','Council rates','Water','Land tax','Insurance','DA Approvals & permits','Construction','Consultants','Other'];
 const STAGE_STATUS=['Planning','Approved','In progress','Done','On hold'];
 const FREQS=[['once','One-off'],['weekly','Weekly'],['fortnightly','Fortnightly'],['monthly','Monthly'],['quarterly','Quarterly'],['yearly','Yearly']];
@@ -1051,7 +1076,7 @@ function normalize(d,c){
   o.land={...b.land,...(d.land||{})};
   o.loan={...b.loan,...(d.loan||{})};
   if(!Array.isArray(o.loan.rates))o.loan.rates=[];
-  ['shareholders','contributions','payments','expenses','stages','reminders','messages','banks','utilityTypes'].forEach(k=>{if(!Array.isArray(o[k]))o[k]=[]});
+  ['shareholders','contributions','plans','payments','expenses','stages','reminders','messages','banks','utilityTypes'].forEach(k=>{if(!Array.isArray(o[k]))o[k]=[]});
   if(!o.banks.length&&o.loan.lender)o.banks=[o.loan.lender];
   o.payments.forEach(x=>{if(!x.type)x.type='regular';if(x.bank==null)x.bank=o.loan.lender||''});
   o.expenses.forEach(x=>{if(x.category==='Approvals & permits')x.category='DA Approvals & permits';if(!x.kind)x.kind=LEGACY_UTIL.has(x.category)?'utility':'work';if(x.kind==='utility'&&!x.utility)x.utility=x.category});
@@ -1157,7 +1182,7 @@ function table(cols,rows,opts={}){
   const canDel=rows.some(r=>r.act&&DEL_KIND[r.act]);
   if(canDel){cols=[...cols,{l:'',del:1}];rows=rows.map(r=>({...r,cells:[...r.cells,r.act&&DEL_KIND[r.act]?`<button class="delbtn" data-act="del" data-kind="${DEL_KIND[r.act]}" data-id="${esc(r.id)}" aria-label="Delete" title="Delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13h10l1-13"/><path d="M9 7V4h6v3"/></svg></button>`:'']}));if(opts.foot)opts={...opts,foot:[...opts.foot,'']}}
   const cell=(v,i)=>`<td data-label="${esc(cols[i].l)}" class="${cols[i].n?'n':''}${cols[i].full?' full':''}${cols[i].del?' delcell':''}">${v}</td>`;
-  return `<div class="tw"><table class="rt"><thead><tr>${cols.map(c=>`<th class="${c.n?'n':''}">${c.l}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr${r.act?` class="click" data-act="${r.act}" data-id="${esc(r.id)}" tabindex="0"`:''}>${r.cells.map(cell).join('')}</tr>`).join('')}</tbody>${opts.foot?`<tfoot><tr>${opts.foot.map(cell).join('')}</tr></tfoot>`:''}</table></div>`;
+  return `<div class="tw"><table class="rt"><thead><tr>${cols.map(c=>`<th class="${c.n?'n':''}">${c.l}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr${r.act?` class="click" data-act="${r.act}" data-id="${esc(r.id||'')}"${r.n?` data-n="${r.n}"`:''} tabindex="0"`:''}>${r.cells.map(cell).join('')}</tr>`).join('')}</tbody>${opts.foot?`<tfoot><tr>${opts.foot.map(cell).join('')}</tr></tfoot>`:''}</table></div>`;
 }
 function datebox(d){return `<div class="datebox"><b>${d.getDate()}</b><small>${d.toLocaleDateString('en-AU',{month:'short'})}</small></div>`}
 function fmtAbn(a){const d=String(a).replace(/\D/g,'');return d.length===11?`${d.slice(0,2)} ${d.slice(2,5)} ${d.slice(5,8)} ${d.slice(8)}`:String(a)}
@@ -1301,7 +1326,7 @@ function upcoming(c,due,L){
 
 function shareCard(c,s){const ms=c.shareholders.filter(p=>p.share===s);
     return `<section class="card share"><h3>Share ${s}<span>25%</span></h3><div class="mlist">
-    ${ms.map(p=>{const miss=['email','mobile','whatsapp'].filter(k=>!p[k]);return `<button class="member${miss.length?' st-warn':''}" data-act="edit-person" data-id="${p.id}"><div><b>${esc(p.name)}</b><small class="st-long">${miss.length?`Missing ${miss.map(k=>k==='whatsapp'?'WhatsApp':k).join(', ')}`:'Email · SMS · WhatsApp'}</small><small class="st-short${miss.length?' miss':''}">${miss.length?`Missing ${miss.length}`:'All set'}</small></div></button>`}).join('')||'<div class="empty">No one in this share</div>'}</div></section>`}
+    ${ms.map(p=>{const miss=['email','mobile','whatsapp'].filter(k=>!p[k]);return `<button class="member" data-act="share-open" data-n="${s}"><div><b>${esc(p.name)}</b><small>Tap for payments</small></div></button>`}).join('')||'<div class="empty">No one in this share</div>'}</div></section>`}
 function subtabsHtml(name,curTab,tabs){return `<div class="subtabs" role="tablist" aria-label="${name}">${tabs.map(([k,l])=>`<button role="tab" aria-selected="${curTab===k}" data-act="subtab" data-key="${name}" data-tab="${k}">${l}</button>`).join('')}</div>`}
 function vHolders(c){
   const T=totals(c);
@@ -1312,9 +1337,9 @@ function vHolders(c){
   <div class="vscroll">
   <div class="v-overview sharehost"><div class="shares">${[1,2,3,4].map(n=>shareCard(c,n)).join('')}</div></div>
   <section class="card"><header class="ch"><h2>Paid in by share</h2></header>
-    ${table([{l:'Share'},{l:'Members',full:1},{l:'Ownership',n:1},{l:'Paid in',n:1}],
-      T.shares.map(x=>({cells:[`<b>Share ${x.n}</b>`,x.members.map(p=>esc(p.name)).join(', ')||'—','25%',m2(x.paid)]})),
-      {foot:['Total','','100%',m2(T.contribTotal)]})}
+    ${table([{l:'Share'},{l:'Members',full:1},{l:'Ownership',n:1},{l:'Monthly',n:1},{l:'Paid in',n:1}],
+      T.shares.map(x=>({act:'share-open',n:x.n,cells:[`<b>Share ${x.n}</b>`,x.members.map(p=>esc(p.name)).join(', ')||'—','25%',m2(planMonthly(c,x.n)),m2(x.paid)]})),
+      {foot:['Total','','100%',m2(sum([1,2,3,4],n=>planMonthly(c,n))),m2(T.contribTotal)]})}
   </section>
   <section class="card"><header class="ch"><h2>Payments in</h2>
     <select id="pfilter" aria-label="Filter by share" style="width:auto"><option value="all">All shares</option>${[1,2,3,4].map(n=>`<option value="${n}"${String(personFilter)===String(n)?' selected':''}>Share ${n}</option>`).join('')}</select></header>
@@ -1655,7 +1680,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.08.15';
+const APP_VERSION='2026.11.08.17';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -1816,7 +1841,7 @@ function render(){
   {const src=logoSrc(C()),bl=$('#bglogo');bl.style.backgroundImage=src?`url("${src}${src.startsWith('data:')?'':'?v=3'}")`:'none'}
   renderShell();
   const c=C();
-  const v={overview:vOverview,holders:vHolders,mortgage:vMortgage,outgoings:vOutgoings,reports:vReports}[sec]||vOverview;
+  const v={overview:vOverview,setup:vSetup,holders:vHolders,mortgage:vMortgage,outgoings:vOutgoings,reports:vReports}[sec]||vOverview;
   const key=[cur,sec,ovTab,mTab,oTab,calMonth&&calMonth.join('-')].join('|'),changed=key!==lastViewKey;lastViewKey=key;
   $('#view').className='view v-'+sec+(changed?' enter'+(swipeDir?' from-'+swipeDir:''):'');swipeDir='';
   $('#view').innerHTML=(!loaded&&CFG.scriptUrl)?skeleton():v(c);
@@ -2013,13 +2038,13 @@ function formPerson(id,share){
   ],onSave:v=>{upsert(c.shareholders,p?.id,{name:v.name,share:Number(v.share),email:v.email,mobile:v.mobile,whatsapp:v.whatsapp})},
   onDelete:p&&!has?()=>remove(c.shareholders,p.id):null});
 }
-function formContrib(id){
+function formContrib(id,pre={}){
   const c=C(),x=c.contributions.find(a=>a.id===id);
-  openForm({title:x?'Edit payment':'Record payment',done:'Payment saved',fields:[
-    {id:'shareId',label:'Which share paid',type:'select',options:[1,2,3,4].map(n=>[n,`Share ${n} (${c.shareholders.filter(p=>p.share===n).map(p=>p.name).join(', ')||'no members'})`]),value:x?shareOf(c,x):(personFilter!=='all'?personFilter:1)},
+  openForm({title:x?'Edit payment':(pre.type?`Add ${pre.type.toLowerCase()} payment`:'Record payment'),done:'Payment saved',fields:[
+    {id:'shareId',label:'Which share paid',type:'select',options:[1,2,3,4].map(n=>[n,`Share ${n} (${c.shareholders.filter(p=>p.share===n).map(p=>p.name).join(', ')||'no members'})`]),value:x?shareOf(c,x):(pre.shareId||(personFilter!=='all'?personFilter:1))},
     {id:'date',label:'Date',type:'date',value:x?.date??iso(today()),half:1,required:1},
     {id:'amount',label:'Amount ($)',type:'number',value:x?.amount,half:1,required:1},
-    {id:'type',label:'What it was for',type:'select',options:CONTRIB_TYPES,value:x?.type??'Loan repayment'},
+    {id:'type',label:'What it was for',type:'select',options:CONTRIB_TYPES,value:x?(catOf(x)==='Other'?x.type:catOf(x)):(pre.type||'Principal')},
     {id:'note',label:'Note',value:x?.note,placeholder:'e.g. Bank transfer, October repayment'}
   ],onSave:v=>{upsert(c.contributions,x?.id,{...v,shareId:Number(v.shareId),personId:''})},onDelete:x?()=>remove(c.contributions,x.id):null});
 }
@@ -2262,21 +2287,62 @@ function openSettings(){
     <p class="setstat">Signed in as <b>&nbsp;${esc(authEmail||'—')}</b>&nbsp;<button type="button" class="link" data-act="signout">Sign out</button></p>
     <p class="setlabel">Appearance</p>
     <div class="modes" role="group" aria-label="Appearance">${[['light','Light'],['dark','Dark'],['auto','Auto']].map(([m,lab])=>`<button type="button" data-act="mode" data-mode="${m}" aria-pressed="${modePref===m}">${lab}</button>`).join('')}</div>
-    ${grp('Company',`${row('set-company','Company details',esc([c.name,c.email?'Emails from '+c.email:'',c.abn?'ABN '+c.abn:''].filter(Boolean).join(' · ')))}
+    ${grp('Logo',`
       <label class="setrow" for="logofile"><span class="sr-t"><b>${hasLogo?'Change logo':'Add logo'}</b><small>PNG or JPG</small></span><span class="chev" aria-hidden="true">›</span><input type="file" id="logofile" accept="image/png,image/jpeg,image/webp" hidden></label>
       ${custom?row('logo-default','Use original logo',''):''}${hasLogo?row('logo-hide','Hide logo',''):(c.logo==='none'?row('logo-default','Show logo again',''):'')}`)}
-    ${grp('Land',row('set-land','Land details',esc([l.address,num(l.size)?sizeText(l):'',num(l.value)?m0(l.value):''].filter(Boolean).join(' · ')||'Not set')))}
-    ${grp('Loan',row('set-setup','Loan setup','Purchase price, deposit, loan, interest, fees and opening balance','gold')+row('set-loan','Loan details',esc([c.loan.lender,num(c.loan.principal)?m0(c.loan.principal):'',L.rate?fpct(L.rate)+' p.a.':'',num(c.loan.repayment)?m0(c.loan.repayment)+' a month':''].filter(Boolean).join(' · ')||'Not set'))+row('set-rates','Interest rate changes',`${c.loan.rates.length} recorded`))}
-    ${grp('Banks and utilities',row('set-banks','Banks',`${allBanks(c).length} banks · ${c.banks.length} yours`)+row('set-utils','Utility types',`${UTIL_TYPES.length+c.utilityTypes.length} types`))}
-    ${grp('Shareholders',row('set-people','Shareholders and contacts',`${c.shareholders.length} people in 4 shares`))}
-    ${grp('Construction',row('set-stages','Construction stages',`${c.stages.length} stages`))}
-    ${c.sample?grp('Data',row('set-clear','Clear sample data','','danger')):''}`}]});
+    <p class="muted small" style="margin-top:14px">Company, land, loan, shareholders, banks and other setup are on the Setup page.</p>
+    `}]});
   const f=$('#logofile');if(f)f.onchange=()=>{const file=f.files&&f.files[0];if(!file)return;
     if(!/^image\/(png|jpeg|webp)$/.test(file.type)){toast('Choose a PNG, JPG or WebP image.');return}
     const img=new Image(),url=URL.createObjectURL(file);
     img.onload=()=>{const S=256,cv=document.createElement('canvas');cv.width=S;cv.height=S;const g=cv.getContext('2d');const k=Math.min(S/img.width,S/img.height);const w=img.width*k,h=img.height*k;g.drawImage(img,(S-w)/2,(S-h)/2,w,h);URL.revokeObjectURL(url);
       c.logo=cv.toDataURL('image/png');closeModal();commit();toast('Logo updated');openSettings()};
     img.onerror=()=>{URL.revokeObjectURL(url);toast('That image could not be read. Try another file.')};img.src=url};
+}
+function planMonthly(c,n,cat){return sum(c.plans.filter(p=>Number(p.shareId)===n&&(!cat||p.cat===cat)&&(!p.until||p.until>=iso(today()))),p=>p.amount)}
+let shTab='Deposit';
+function openShare(n,tab){n=Number(n);if(tab)shTab=tab;const c=C(),cat=shTab,T=totals(c);
+  const ms=c.shareholders.filter(p=>p.share===n).map(p=>p.name);
+  const pays=c.contributions.filter(x=>shareOf(c,x)===n&&catOf(x)===cat).sort(byDate).reverse();
+  const plans=c.plans.filter(p=>Number(p.shareId)===n&&p.cat===cat);
+  const paid=sum(pays,x=>x.amount),monthly=planMonthly(c,n,cat);
+  const ord=d=>{const k=+d,s=['th','st','nd','rd'],v=k%100;return k+(s[(v-20)%10]||s[v]||s[0])};
+  const kp=(l,v,cls='')=>`<div class="shk ${cls}"><small>${l}</small><b>${v}</b></div>`;
+  let kpis=kp('Paid so far',m2(paid))+kp('Monthly',m2(monthly)+'<em>/mo</em>');
+  if(cat==='Deposit'){const due=T.depositReq/4;kpis=kp('Share of deposit',m2(due))+kp('Paid so far',m2(paid))+kp('Left to pay',m2(Math.max(0,due-paid)),due-paid>0.005?'warn':'ok')}
+  openForm({title:`Share ${n} · ${ms.join(', ')||'No members'}`,noSave:1,noFocus:1,fields:[{id:'sh',type:'html',html:`
+    <div class="subtabs shtabs" role="tablist" aria-label="Payment type">${SH_CATS.map(k=>`<button type="button" role="tab" aria-selected="${k===cat}" data-act="sh-tab" data-n="${n}" data-tab="${k}">${k}</button>`).join('')}</div>
+    <div class="shkpis">${kpis}</div>
+    <div class="shsec"><p class="setlabel">Monthly contribution</p>
+      <div class="setlist">${plans.map(p=>lrow('sh-plan',p.id,`${m2(p.amount)} a month`,esc(['On the '+ord(p.day||1),p.from?'from '+fd(p.from):'',p.until?'until '+fd(p.until):'',p.note].filter(Boolean).join(' · ')))).join('')||'<div class="empty">No monthly contribution set.</div>'}</div>
+      <button type="button" class="btn" data-act="sh-add-plan" data-n="${n}">${plans.length?'Add another':'Set monthly'} ${cat.toLowerCase()}</button></div>
+    <div class="shsec"><p class="setlabel">Paid in</p>
+      <div class="setlist">${pays.map(x=>lrow('sh-pay',x.id,m2(x.amount),esc([fd(x.date),x.note].filter(Boolean).join(' · ')))).join('')||'<div class="empty">Nothing paid in yet.</div>'}</div>
+      <button type="button" class="btn gold" data-act="sh-add-pay" data-n="${n}">Add ${cat.toLowerCase()} payment</button></div>`}]});
+}
+function formPlan(n,id){const c=C(),x=c.plans.find(p=>p.id===id);n=x?Number(x.shareId):Number(n);const cat=x?x.cat:shTab;
+  openForm({title:`${x?'Edit':'Set'} monthly ${cat.toLowerCase()} · Share ${n}`,done:'Monthly contribution saved',fields:[
+    {id:'amount',label:'Amount each month ($)',type:'number',value:x?.amount,half:1,required:1},
+    {id:'day',label:'Day of the month',type:'select',options:Array.from({length:28},(_,i)=>[i+1,String(i+1)]),value:x?.day??1,half:1},
+    {id:'from',label:'Starting',type:'date',value:x?.from??iso(today()),half:1},
+    {id:'until',label:'Ending (optional)',type:'date',value:x?.until,half:1},
+    {id:'note',label:'Note',value:x?.note,placeholder:'e.g. Direct debit from CBA'}
+  ],onSave:v=>{if(!(num(v.amount)>0))return 'Enter an amount above $0.';if(v.until&&v.from&&v.until<v.from)return 'The end date is before the start date.';
+    upsert(c.plans,x?.id,{shareId:n,cat,amount:num(v.amount),day:Number(v.day),from:v.from,until:v.until||'',note:v.note})},
+  onDelete:x?()=>remove(c.plans,x.id):null});
+}
+function vSetup(c){const l=c.land,L=loanState(c);
+  const row=(act,ic,t,sub,cls='')=>`<button type="button" class="setrow ${cls}" data-act="${act}">${icon(ic,'sr-ic')}<span class="sr-t"><b>${t}</b><small>${sub}</small></span><span class="chev" aria-hidden="true">›</span></button>`;
+  const grp=(t,inner)=>`<section class="card setgrp"><header class="ch"><h2>${t}</h2></header><div class="setlist">${inner}</div></section>`;
+  return `<div class="pagehead"><div><h1>Setup</h1></div></div>
+  <div class="vscroll"><div class="setupgrid">
+  ${grp('Company',row('set-company','doc','Company details',esc([c.name,c.abn?'ABN '+fmtAbn(c.abn):'',c.email].filter(Boolean).join(' · ')||'Not set'))+row('set-land','home','Land details',esc([l.address,num(l.size)?sizeText(l):'',num(l.value)?m0(l.value):''].filter(Boolean).join(' · ')||'Not set')))}
+  ${grp('Loan',row('set-setup','repeat','Loan setup','Purchase price, deposit, loan, interest, fees and opening balance','gold')+row('set-loan','doc','Loan details',esc([c.loan.lender,num(c.loan.principal)?m0(c.loan.principal):'',L.rate?fpct(L.rate)+' p.a.':''].filter(Boolean).join(' · ')||'Not set'))+row('set-rates','repeat','Interest rate changes',`${c.loan.rates.length} recorded`))}
+  ${grp('Shareholders',row('set-people','people','Shareholders and contacts',`${c.shareholders.length} people in 4 shares`))}
+  ${grp('Banks and utilities',row('set-banks','repeat','Banks',`${allBanks(c).length} banks · ${c.banks.length} yours`)+row('set-utils','drop','Utility types',`${UTIL_TYPES.length+c.utilityTypes.length} types`))}
+  ${grp('Construction',row('set-stages','hammer','Construction stages',`${c.stages.length} stages`))}
+  ${c.sample?grp('Data',row('set-clear','doc','Clear sample data','','danger')):''}
+  </div></div>`;
 }
 function listModal(title,items,addAct,addLabel){
   openForm({title,noSave:1,noFocus:1,fields:[{id:'l',type:'html',html:`<div class="setlist">${items.join('')||'<div class="empty">Nothing yet.</div>'}</div>${addAct?`<button type="button" class="btn gold" style="margin-top:10px" data-act="${addAct}">${addLabel}</button>`:''}`}]});
@@ -2298,6 +2364,7 @@ function formUtilType(i){const c=C(),old=i==null?null:c.utilityTypes[+i];
 function openStageList(){const c=C();listModal('Construction stages',c.stages.map(s=>lrow('sl-stage',s.id,esc(s.name),esc(`${s.status||''} · Budget ${m0(s.budget)}`))),'sl-add-stage','Add stage')}
 
 /* ---------- events ---------- */
+const fromSetup=fn=>{navStack=[];fn()};
 const ACTIONS={
   'close':()=>{closeModal();goBack()},
   'go-setup':()=>{navStack=[];formSetup()},'go-land':()=>{navStack=[];formLand()},'go-people':()=>{sec='holders';render()},
@@ -2305,11 +2372,12 @@ const ACTIONS={
   'fab':openQuickAdd,'search':openSearch,'search-go':d=>searchGo(d),'letter':formLetter,'undo':undo,'del':d=>delItem(d.kind,d.id),'signout':signOut,
   'rep-email':d=>emailReport([{to:d.to,name:d.who}]),
   'rep-email-all':()=>emailReport(rRecipients().filter(p=>p.email).map(p=>({to:p.email,name:p.name}))),'subtab':d=>{if(d.key==='mortgage')mTab=d.tab;else if(d.key==='outgoings')oTab=d.tab;render()},'add-person':()=>formPerson(),
-  'set-setup':()=>child(openSettings,formSetup),'set-company':()=>child(openSettings,formCompany),'set-land':()=>child(openSettings,formLand),'set-loan':()=>child(openSettings,formLoan),
-  'set-rates':()=>child(openSettings,openRateList),'set-people':()=>child(openSettings,openPeopleList),'set-stages':()=>child(openSettings,openStageList),'set-clear':()=>child(openSettings,clearSample),
+  'set-setup':()=>fromSetup(formSetup),'set-company':()=>fromSetup(formCompany),'set-land':()=>fromSetup(formLand),'set-loan':()=>fromSetup(formLoan),
+  'set-rates':()=>fromSetup(openRateList),'set-people':()=>fromSetup(openPeopleList),'set-stages':()=>fromSetup(openStageList),'set-clear':()=>fromSetup(clearSample),
+  'share-open':d=>{navStack=[];openShare(d.n,'Deposit')},'sh-tab':d=>openShare(d.n,d.tab),'sh-add-pay':d=>child(()=>openShare(d.n),()=>formContrib(null,{shareId:Number(d.n),type:shTab})),'sh-pay':d=>{const x=C().contributions.find(q=>q.id===d.id);const n=x?shareOf(C(),x):1;child(()=>openShare(n),()=>formContrib(d.id))},'sh-add-plan':d=>child(()=>openShare(d.n),()=>formPlan(d.n)),'sh-plan':d=>{const x=C().plans.find(q=>q.id===d.id);child(()=>openShare(x?x.shareId:1),()=>formPlan(null,d.id))},
   'sl-rate':d=>child(openRateList,()=>formRate(d.id)),'sl-add-rate':()=>child(openRateList,()=>formRate()),
   'sl-person':d=>child(openPeopleList,()=>formPerson(d.id)),'sl-add-person':()=>child(openPeopleList,()=>formPerson()),
-  'set-banks':()=>child(openSettings,openBankList),'set-utils':()=>child(openSettings,openUtilList),'sl-bank':d=>child(openBankList,()=>formBank(d.id)),'sl-add-bank':()=>child(openBankList,()=>formBank()),'sl-util':d=>child(openUtilList,()=>formUtilType(d.id)),'sl-add-util':()=>child(openUtilList,()=>formUtilType()),
+  'set-banks':()=>fromSetup(openBankList),'set-utils':()=>fromSetup(openUtilList),'sl-bank':d=>child(openBankList,()=>formBank(d.id)),'sl-add-bank':()=>child(openBankList,()=>formBank()),'sl-util':d=>child(openUtilList,()=>formUtilType(d.id)),'sl-add-util':()=>child(openUtilList,()=>formUtilType()),
   'sl-stage':d=>child(openStageList,()=>formStage(d.id)),'sl-add-stage':()=>child(openStageList,()=>formStage()),'copy-report':()=>{const t=reportText(reportModel(),'');try{navigator.clipboard.writeText(t).then(()=>toast('Report copied'),()=>toast('Copy was blocked'))}catch(e){toast('Copy was blocked')}},'rep-send':openSend,'rep-download':openDownload,'rep-dl':d=>downloadReport(d.fmt),'rep-all':()=>{rOpt.secs=RSECS.map(x=>x[0]);render()},'rep-none':()=>{rOpt.secs=[];render()},'rep-preset':d=>{const p=RPRESETS[d.id];rOpt.secs=[...p.secs];rOpt.period=p.period||'all';rOpt.share=p.share||'all';render()},'lstab':d=>{lsTab=d.tab;render()},'mode':d=>setMode(d.mode),'ovtab':d=>{ovTab=d.tab;render()},'settings':openSettings,'logo-default':()=>{C().logo='';closeModal();commit();openSettings()},'logo-hide':()=>{C().logo='none';closeModal();commit();openSettings()},'edit-land':formLand,'clear-sample':clearSample,
   'edit-person':d=>formPerson(d.id),'add-person':d=>formPerson(null,Number(d.share)),'copy-people':copyPeople,
   'add-contrib':()=>formContrib(),'edit-contrib':d=>formContrib(d.id),
@@ -2381,7 +2449,7 @@ function signOut(){try{localStorage.removeItem('pbk-token')}catch(e){}authToken=
 /* ---------- multi-device sync ---------- */
 let base={},lastSync=0,retryT=null;
 const coOf=id=>COMPANIES.find(x=>x.id===id);
-const COLLS=['shareholders','contributions','payments','expenses','stages','reminders','messages'];
+const COLLS=['shareholders','contributions','plans','payments','expenses','stages','reminders','messages'];
 const js=x=>JSON.stringify(x===undefined?null:x);
 function mergeArr(b,l,r){b=b||[];l=l||[];r=r||[];
   const B=new Map(b.map(x=>[x.id,js(x)])),L=new Map(l.map(x=>[x.id,x])),R=new Map(r.map(x=>[x.id,x]));
