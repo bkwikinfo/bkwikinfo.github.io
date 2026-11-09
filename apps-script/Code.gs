@@ -71,7 +71,7 @@ function portal_(email) {
       const single = (d.shareholders || []).filter(q => Number(q.share) === Number(p.share)).length === 1;
       const mine = r => (r.personId === p.id) || (!r.personId && single && shareOf_(d, r) === Number(p.share));
       const members = (d.shareholders || []).filter(q => Number(q.share) === Number(p.share)).length;
-      out.push({ id: id, name: d.name || COMPANIES[id].name, abn: d.abn || '', email: d.email || COMPANIES[id].from, phone: d.phone || '', address: d.address || '',
+      out.push({ id: id, logo: (String(d.logo || '').indexOf('data:image/') === 0 || d.logo === 'none') ? d.logo : '', name: d.name || COMPANIES[id].name, abn: d.abn || '', email: d.email || COMPANIES[id].from, phone: d.phone || '', address: d.address || '',
         land: d.land ? { address: d.land.address || '' } : {},
         person: { id: p.id, name: p.name, share: Number(p.share), email: p.email, pct: +(25 / members).toFixed(2) },
         plans: (d.plans || []).filter(r => Number(r.shareId) === Number(p.share) && mine(r)).map(r => ({ id: r.id, shareId: Number(r.shareId), personId: p.id, cat: r.cat, amount: r.amount, day: r.day, from: r.from, until: r.until })),
