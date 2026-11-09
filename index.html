@@ -1000,6 +1000,18 @@ body[data-mode="dark"] .bad-t{color:#f08a8a}body[data-mode="dark"] .ok-t{color:#
 body[data-mode="dark"] .pcon b{color:var(--third)}body[data-mode="dark"] .ptot b{color:var(--third)}body[data-mode="dark"] .ptot b.w{color:#f0a36b}body[data-mode="dark"] .ptot b.g{color:#7fd6a8}
 #portal .pfab{position:fixed;right:18px;bottom:calc(20px + env(safe-area-inset-bottom));display:grid}
 @media (max-width:420px){.pcoaddr{font-size:11.5px}.pgrid > span{font-size:13px}}
+.pout{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;cursor:pointer;color:var(--navy);
+  background:color-mix(in srgb,var(--glass) 55%,transparent);border:1px solid color-mix(in srgb,var(--glass) 80%,transparent);box-shadow:inset 0 1px 0 color-mix(in srgb,#fff 60%,transparent)}
+.pout svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+body[data-mode="dark"] .pout{color:var(--third)}
+.pbtns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.pbtn{display:flex;align-items:center;gap:10px;padding:12px;border-radius:14px;cursor:pointer;text-align:left;color:var(--ink);font:inherit;
+  background:color-mix(in srgb,var(--glass) 50%,transparent);border:1px solid color-mix(in srgb,var(--glass) 80%,transparent)}
+.pbtn .ppill{min-width:0;width:14px;height:14px;padding:0;flex:none}.pbtn b{font-size:14px}
+.pbtn:hover{border-color:color-mix(in srgb,var(--gold) 60%,transparent)}
+.ppill.extra{background:#2f6db5}
+.reqcard .setrow .ppill{flex:none;margin-right:8px}
+.reqcard .setrow .sr-t{flex:1;text-align:left;align-items:flex-start}
 /* three sub-tabs */
 .subtabs:has(> :nth-child(3):last-child){grid-template-columns:repeat(3,1fr)}
 @media (max-width:860px){.subtabs:has(> :nth-child(3):last-child){max-width:none}}
@@ -1164,7 +1176,7 @@ function normalize(d,c){
   o.land={...b.land,...(d.land||{})};
   o.loan={...b.loan,...(d.loan||{})};
   if(!Array.isArray(o.loan.rates))o.loan.rates=[];
-  ['shareholders','contributions','plans','payments','expenses','stages','reminders','messages','banks','utilityTypes','ownership','meetings','audits'].forEach(k=>{if(!Array.isArray(o[k]))o[k]=[]});
+  ['shareholders','contributions','plans','payments','expenses','stages','reminders','messages','banks','utilityTypes','ownership','meetings','audits','requests'].forEach(k=>{if(!Array.isArray(o[k]))o[k]=[]});
   o.auto=Object.assign({statementDay:0,statementWho:'plan',overdueDays:0,receipts:false,loanAlertDays:0,billAlertDays:0,backup:''},o.auto&&typeof o.auto==='object'?o.auto:{});
   if(!o.banks.length&&o.loan.lender)o.banks=[o.loan.lender];
   o.payments.forEach(x=>{if(!x.type)x.type='regular';if(x.bank==null)x.bank=o.loan.lender||''});
@@ -1426,7 +1438,7 @@ function vHolders(c){
   return `
   <div class="pagehead"><div><h1>Shareholders</h1></div>
     </div>
-  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments'],['meetings','Meetings']])}
+  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments'+(c.requests.filter(r=>r.status==='new').length?` (${c.requests.filter(r=>r.status==='new').length})`:'')],['meetings','Meetings']])}
   <div class="vscroll">
   <div class="v-overview sharehost"><div class="shares">${[1,2,3,4].map(n=>shareCard(c,n)).join('')}</div></div>
   <section class="card"><header class="ch"><h2>Paid in by share</h2></header>
@@ -1773,7 +1785,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.10.2';
+const APP_VERSION='2026.11.10.3';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -2142,11 +2154,11 @@ function formContrib(id,pre={}){
   const c=C(),x=c.contributions.find(a=>a.id===id);
   openForm({title:x?'Edit payment':(pre.type?`Add ${pre.type.toLowerCase()} payment${pre.who?' · '+pre.who:''}`:'Record payment'),done:'Payment saved',fields:[
     {id:'shareId',label:'Which share paid',type:'select',options:[1,2,3,4].map(n=>[n,`Share ${n} (${c.shareholders.filter(p=>p.share===n).map(p=>p.name).join(', ')||'no members'})`]),value:x?shareOf(c,x):(pre.shareId||(personFilter!=='all'?personFilter:1))},
-    {id:'date',label:'Date',type:'date',value:x?.date??iso(today()),half:1,required:1},
-    {id:'amount',label:'Amount ($)',type:'number',value:x?.amount,half:1,required:1},
+    {id:'date',label:'Date',type:'date',value:x?.date??(pre.date||iso(today())),half:1,required:1},
+    {id:'amount',label:'Amount ($)',type:'number',value:x?.amount??pre.amount,half:1,required:1},
     {id:'type',label:'What it was for',type:'select',options:CONTRIB_TYPES,value:x?(catOf(x)==='Other'?x.type:catOf(x)):(pre.type||'Principal')},
-    {id:'note',label:'Note',value:x?.note,placeholder:'e.g. Bank transfer, October repayment'}
-  ],onSave:v=>{const sid=Number(v.shareId);let pid=x?(x.personId||''):(pre.personId||'');const pp=c.shareholders.find(p=>p.id===pid);if(pp&&pp.share!==sid)pid='';upsert(c.contributions,x?.id,{...v,shareId:sid,personId:pid});if(!x&&c.auto.receipts){const nx=c.contributions[c.contributions.length-1];setTimeout(()=>sendReceipt(c,nx),300)}},onDelete:x?()=>remove(c.contributions,x.id):null});
+    {id:'note',label:'Note',value:x?.note??pre.note,placeholder:'e.g. Bank transfer, October repayment'}
+  ],onSave:v=>{if(pre.onDone)pre.onDone();const sid=Number(v.shareId);let pid=x?(x.personId||''):(pre.personId||'');const pp=c.shareholders.find(p=>p.id===pid);if(pp&&pp.share!==sid)pid='';upsert(c.contributions,x?.id,{...v,shareId:sid,personId:pid});if(!x&&c.auto.receipts){const nx=c.contributions[c.contributions.length-1];setTimeout(()=>sendReceipt(c,nx),300)}},onDelete:x?()=>remove(c.contributions,x.id):null});
 }
 function formLoan(){
   const c=C(),l=c.loan,r=currentRate(c);
@@ -2510,7 +2522,7 @@ function openImport(){const c=C();importRows=[];
 function vMeetings(c){const t=iso(today()),up=c.meetings.filter(m=>m.date>=t).sort(byDate),past=c.meetings.filter(m=>m.date<t).sort(byDate).reverse();
   const card=m=>`<button type="button" class="setrow" data-act="mt-open" data-id="${m.id}">${icon('cal','sr-ic')}<span class="sr-t"><b>${esc(m.title||'Shareholders meeting')}</b><small>${fd(m.date)}${m.time?' · '+esc(m.time):''}${m.place?' · '+esc(m.place):''} · ${(m.attendees||[]).length} attending${m.minutes?' · minutes saved':''}</small></span><span class="chev">›</span></button>`;
   return `<div class="pagehead"><div><h1>Shareholders</h1></div><div class="actions"><button class="btn gold" data-act="mt-add">New meeting</button></div></div>
-  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments'],['meetings','Meetings']])}
+  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments'+(c.requests.filter(r=>r.status==='new').length?` (${c.requests.filter(r=>r.status==='new').length})`:'')],['meetings','Meetings']])}
   <div class="vscroll"><div class="setupgrid">
   <section class="card setgrp"><header class="ch"><h2>Upcoming</h2></header><div class="setlist">${up.map(card).join('')||'<div class="empty">No meetings planned.</div>'}</div></section>
   <section class="card setgrp"><header class="ch"><h2>Past</h2></header><div class="setlist">${past.map(card).join('')||'<div class="empty">No past meetings yet.</div>'}</div></section></div></div>`}
@@ -2552,7 +2564,7 @@ function pStatus(due,paid,dueIso){const t=iso(today());
   return late?{k:'late',l:'Overdue'}:{k:'due',l:'Due'}}
 const pPill=x=>`<span class="ppill ${x.k}">${x.l}</span>`;
 function renderPortal(){const el=$('#portal'),x=PORTAL[pIdx];
-  if(!x){el.innerHTML=`<div class="pwrap"><header class="phead"><img src="bkwik-logo.png" alt="" class="plogo"><div><b>${greetInfo().t}</b><small>${esc(authEmail)}</small></div><button class="btn sm" data-pa="out">Sign out</button></header><div class="card"><div class="empty">Nothing to show for this account yet.</div></div></div>`;return}
+  if(!x){el.innerHTML=`<div class="pwrap"><header class="phead"><img src="bkwik-logo.png" alt="" class="plogo"><div><b>${greetInfo().t}</b><small>${esc(authEmail)}</small></div><button class="pout" data-pa="out" aria-label="Sign out" title="Sign out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg></button></header><div class="card"><div class="empty">Nothing to show for this account yet.</div></div></div>`;return}
   document.body.dataset.co=x.id;const c=portalC(),p=x.person,ym=pMonth,S=statement(c,p,ym);
   const pays=[...c.contributions].sort(byDate).reverse();
   const dIso=day=>day?`${ym}-${String(Math.min(28,day)).padStart(2,'0')}`:`${mRange(ym)[1]}`;
@@ -2560,7 +2572,7 @@ function renderPortal(){const el=$('#portal'),x=PORTAL[pIdx];
   const tot=pStatus(S.due,S.paid,dIso(firstDay));const lg=logoSrc(x);
   const addr=x.land&&x.land.address||x.address||'';
   el.innerHTML=`<div class="pwrap">
-    <header class="phead"><img src="bkwik-logo.png" alt="" class="plogo"><div><b>${greetInfo().t}, ${esc(p.name.split(' ')[0])}</b><small>${esc(authEmail)}</small></div><button class="btn sm" data-pa="out">Sign out</button></header>
+    <header class="phead"><img src="bkwik-logo.png" alt="" class="plogo"><div><b>${greetInfo().t}, ${esc(p.name.split(' ')[0])}</b><small>${esc(authEmail)}</small></div><button class="pout" data-pa="out" aria-label="Sign out" title="Sign out"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg></button></header>
     ${PORTAL.length>1?`<div class="subtabs ptabs">${PORTAL.map((q,i)=>`<button type="button" data-pa="co" data-i="${i}" aria-selected="${i===pIdx}">${esc(q.name)}</button>`).join('')}</div>`:''}
     <section class="card pco">${lg?`<img src="${lg}" alt="" class="pcologo">`:''}<div class="pcon"><b>${esc(x.name)}</b><small>Share ${p.share}</small></div>${addr?`<div class="pcoaddr">${esc(addr)}</div>`:''}</section>
     <section class="card pmonth"><header class="pmh"><button class="icon-btn" data-pa="m" data-k="-1" aria-label="Previous month">‹</button><h2>${ymLabel(ym)}</h2><button class="icon-btn" data-pa="m" data-k="1" aria-label="Next month">›</button>${pPill(tot)}</header>
@@ -2572,9 +2584,28 @@ function renderPortal(){const el=$('#portal'),x=PORTAL[pIdx];
       <div class="pscroll"><div class="pgrid pg3">${pays.map(q=>`<span>${fd(q.date)}</span><span>${catOf(q)==='Other'?esc(q.type||'Other'):catOf(q)}</span><span class="n">${m2(q.amount)}</span>`).join('')||'<span class="pempty">No payments recorded yet.</span>'}</div></div></section>
     <p class="muted small pfoot">You can only see your own figures. Questions? Email ${esc(x.email||'')}.</p></div>
     <button class="fab pfab" data-pa="menu" aria-label="Statements"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>`}
+const P_KINDS={paid:'I paid',partial:'I partly paid',extra:'I paid extra',extension:'I need an extension'};
 function portalMenu(){const it=(per,t,sub)=>`<button type="button" class="setrow" data-act="p-pdf" data-per="${per}"><span class="sr-t"><b>${t}</b><small>${sub}</small></span><span class="chev">›</span></button>`;
-  openForm({title:'Statements',noSave:1,noFocus:1,intro:'PDF on the company letterhead, with only your own figures.',fields:[{id:'m',type:'html',html:`<div class="setlist">
-    ${it('month','This month',ymLabel(pMonth))}${it('fy','This financial year','1 July to 30 June')}${it('lastfy','Last financial year','For your tax return')}${it('all','All time','Everything since you started')}</div>`}]})}
+  const pb=(k,t,cls)=>`<button type="button" class="pbtn" data-act="p-tell" data-kind="${k}"><span class="ppill ${cls}"></span><b>${t}</b></button>`;
+  openForm({title:PORTAL[pIdx].name,noSave:1,noFocus:1,fields:[{id:'m',type:'html',html:`
+    <p class="setlabel">Payments</p><p class="muted small" style="margin:-4px 0 8px">Let the admin know. Your figures update once they record it.</p>
+    <div class="pbtns">${pb('paid','Paid','paid')}${pb('partial','Partly paid','part')}${pb('extra','Extra paid','extra')}${pb('extension','Need extension','late')}</div>
+    <p class="setlabel" style="margin-top:16px">Statements</p><p class="muted small" style="margin:-4px 0 8px">PDF on the company letterhead, with only your own figures.</p>
+    <div class="setlist">${it('month','This month',ymLabel(pMonth))}${it('fy','This financial year','1 July to 30 June')}${it('lastfy','Last financial year','For your tax return')}${it('all','All time','Everything since you started')}</div>`}]})}
+function portalTell(kind){const x=PORTAL[pIdx],c=portalC(),S=statement(c,x.person,pMonth);const left=Math.max(0,S.due-S.paid);
+  const ext=kind==='extension';
+  const fields=ext?[
+    {id:'until',label:'I can pay by',type:'date',value:iso(new Date(today().getTime()+7*86400000)),required:1,half:1},
+    {id:'amount',label:'Amount ($)',type:'number',value:left?Math.round(left*100)/100:'',half:1},
+    {id:'note',label:'Reason (optional)',type:'textarea',rows:3}]:[
+    {id:'cat',label:'For',type:'select',options:[['','This month (all)'],...SH_CATS.map(k=>[k,k])],value:''},
+    {id:'amount',label:'Amount ($)',type:'number',value:kind==='paid'&&left?Math.round(left*100)/100:'',required:1,half:1},
+    {id:'payDate',label:'Date paid',type:'date',value:iso(today()),required:1,half:1},
+    {id:'note',label:'Bank reference or note (optional)',placeholder:'e.g. CBA transfer ref 12345'}];
+  openForm({title:P_KINDS[kind],saveLabel:'Send to admin',intro:`${esc(x.name)} · ${ymLabel(pMonth)}${!ext&&left?` · still to pay ${m2(left)}`:''}`,fields,
+    onSave:v=>{if(!ext&&!(num(v.amount)>0))return 'Enter the amount you paid.';
+      (async()=>{try{const r=await api('portalNotify',{id:x.id,kind,month:pMonth,amount:num(v.amount),payDate:v.payDate||'',cat:v.cat||'',until:v.until||'',note:v.note||''});
+        toast(r&&r.ok?'Sent to the admin. Thank you.':'Could not send: '+((r&&r.error)||'try again'))}catch(e){toast('Could not send. Check your internet connection.')}})()}})}
 async function portalPdf(per){const c=portalC(),p=PORTAL[pIdx].person;stMonth=pMonth;toast('Making your statement…');
   try{const M=statementModel(c,p,per);const buf=await buildPdf(M);saveFile(buf,fileSafe(`${c.name} statement ${p.name} ${M.sub.split(' · ').pop()}`)+'.pdf','application/pdf')}catch(e){toast('Could not make the PDF.')}}
 /* ---------- monthly statements per person ---------- */
@@ -2606,13 +2637,23 @@ function stText(c,S,ym){const p=S.p,fmt=v=>m2(Math.abs(v));
   if(S.diff<-0.005)lines.push(`Still to pay this month: ${fmt(S.diff)}`);else if(S.diff>0.005)lines.push(`Extra paid this month: ${fmt(S.diff)}`);else if(S.due>0)lines.push('This month is fully paid. Thank you.');
   if(S.earlier>0.005)lines.push(`Still owing from earlier months: ${fmt(S.earlier)}`);else if(S.earlier<-0.005)lines.push(`Paid ahead from earlier months: ${fmt(S.earlier)}`);
   lines.push('','This summary is just for you.','',`Kind regards,`,c.name);return lines.join('\n')}
+const REQ_LABEL={paid:'Paid',partial:'Partly paid',extra:'Extra paid',extension:'Needs extension'},REQ_CLS={paid:'paid',partial:'part',extra:'extra',extension:'late'};
+function reqCard(c){const rs=c.requests.filter(r=>r.status==='new').sort((a,b)=>String(b.at).localeCompare(String(a.at)));if(!rs.length)return '';
+  return `<section class="card reqcard"><header class="ch"><h2>From shareholders</h2><span class="chip warn">${rs.length} new</span></header><div class="setlist">${rs.map(r=>`<button type="button" class="setrow" data-act="req-open" data-id="${r.id}"><span class="ppill ${REQ_CLS[r.kind]}">${REQ_LABEL[r.kind]}</span><span class="sr-t"><b>${esc(r.name)} · Share ${r.share}${r.amount?' · '+m2(r.amount):''}</b><small>${esc([r.cat||'',r.payDate?'paid '+fd(r.payDate):'',r.until?'until '+fd(r.until):'',r.note||'',fd(r.date)].filter(Boolean).join(' · '))}</small></span><span class="chev">›</span></button>`).join('')}</div></section>`}
+function openReq(id){const c=C(),r=c.requests.find(q=>q.id===id);if(!r)return;const p=c.shareholders.find(q=>q.id===r.personId);
+  openForm({title:`${REQ_LABEL[r.kind]} · ${r.name}`,noSave:1,noFocus:1,fields:[{id:'r',type:'html',html:`
+    <div class="shkpis">${r.amount?`<div class="shk"><small>Amount</small><b>${m2(r.amount)}</b></div>`:''}${r.payDate?`<div class="shk"><small>Paid on</small><b>${fd(r.payDate)}</b></div>`:''}${r.until?`<div class="shk warn"><small>Asking until</small><b>${fd(r.until)}</b></div>`:''}<div class="shk"><small>Sent</small><b>${fd(r.date)}</b></div></div>
+    ${r.cat?`<p class="muted small">For: ${esc(r.cat)}</p>`:''}${r.note?`<pre class="stmsg">${esc(r.note)}</pre>`:''}
+    <div class="stsend">${r.kind!=='extension'&&p?`<button type="button" class="btn gold" data-act="req-record" data-id="${r.id}">Record this payment</button>`:''}
+      <button type="button" class="btn" data-act="req-done" data-id="${r.id}">${r.kind==='extension'?'Noted':'Mark as done'}</button></div>`}]})}
 function vMonthly(c){if(!stMonth)stMonth=ymOf(iso(today()));const ym=stMonth;
   const list=[...c.shareholders].sort((a,b)=>a.share-b.share||String(a.name).localeCompare(b.name)).map(p=>statement(c,p,ym));
   const cnt=k=>list.filter(S=>S.st===k).length;
   const sub=(S)=>S.earlier>0.005?`<small class="bad-t">+${m2(S.earlier)} from earlier</small>`:S.earlier<-0.005?`<small class="ok-t">${m2(-S.earlier)} ahead</small>`:'';
   return `<div class="pagehead"><div><h1>Shareholders</h1></div></div>
-  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments'],['meetings','Meetings']])}
+  ${subtabsHtml('holders',hTab,[['shares','Shares'],['monthly','Monthly payments'+(c.requests.filter(r=>r.status==='new').length?` (${c.requests.filter(r=>r.status==='new').length})`:'')],['meetings','Meetings']])}
   <div class="vscroll">
+  ${reqCard(c)}
   <section class="card"><header class="ch stbar"><div class="mnav"><button class="icon-btn" data-act="st-month" data-k="-1" aria-label="Previous month">‹</button><h2>${ymLabel(ym)}</h2><button class="icon-btn" data-act="st-month" data-k="1" aria-label="Next month">›</button></div>
     <button class="btn gold" data-act="st-send-all">Send to everyone</button></header>
     <div class="stsum">${['paid','partial','none','extra'].map(k=>`<div class="sts ${ST_CHIP[k]}"><b>${cnt(k)}</b><small>${ST_LABEL[k]}</small></div>`).join('')}
@@ -2763,7 +2804,9 @@ function openStageList(){const c=C();listModal('Construction stages',c.stages.ma
 
 /* ---------- events ---------- */
 const fromSetup=fn=>{navStack=[];fn()};
-const ST_ACTIONS={'p-pdf':d=>{closeModal();portalPdf(d.per)},'forecast':()=>{navStack=[];openForecast()},'rate-tool':()=>{navStack=[];openRateTool()},'bank-import':()=>{navStack=[];openImport()},
+const ST_ACTIONS={'req-open':d=>{navStack=[];openReq(d.id)},'req-done':d=>{const r=C().requests.find(q=>q.id===d.id);if(r){r.status='done';r.doneAt=iso(today());audit('Shareholder message done');closeModal();commit()}},
+  'req-record':d=>{const c=C(),r=c.requests.find(q=>q.id===d.id);const p=c.shareholders.find(q=>q.id===r.personId);closeModal();navStack=[];
+    formContrib(null,{shareId:p.share,personId:p.id,who:p.name,type:SH_CATS.includes(r.cat)?r.cat:'Principal',amount:r.amount,date:r.payDate||iso(today()),note:'Told by '+p.name+(r.note?': '+r.note:''),onDone:()=>{r.status='done';r.doneAt=iso(today())}})},'p-pdf':d=>{closeModal();portalPdf(d.per)},'p-tell':d=>{child(portalMenu,()=>portalTell(d.kind))},'forecast':()=>{navStack=[];openForecast()},'rate-tool':()=>{navStack=[];openRateTool()},'bank-import':()=>{navStack=[];openImport()},
   'mt-add':()=>{navStack=[];formMeeting()},'mt-open':d=>{navStack=[];formMeeting(d.id)},
   'mt-notice':d=>{const c=C(),m=c.meetings.find(x=>x.id===d.id);closeModal();const recips=c.shareholders.map(p=>({personId:p.id,name:p.name,email:p.email,mobile:p.mobile,whatsapp:p.whatsapp||p.mobile,missing:p.email?[]:['email'],text:meetingNotice(c,m,p)}));
     const msg={id:uid(),date:iso(today()),subject:'Meeting notice: '+(m.title||'Shareholders meeting'),body:m.agenda||'',audience:'all',channels:['email','whatsapp'],recipients:recips,source:'meeting'};c.messages.push(msg);commit();deliver(c,msg)},
@@ -2859,7 +2902,7 @@ function signOut(){try{localStorage.removeItem('pbk-token')}catch(e){}authToken=
 /* ---------- multi-device sync ---------- */
 let base={},lastSync=0,retryT=null;
 const coOf=id=>COMPANIES.find(x=>x.id===id);
-const COLLS=['shareholders','contributions','plans','payments','expenses','stages','reminders','messages','ownership','meetings','audits'];
+const COLLS=['shareholders','contributions','plans','payments','expenses','stages','reminders','messages','ownership','meetings','audits','requests'];
 const js=x=>JSON.stringify(x===undefined?null:x);
 function mergeArr(b,l,r){b=b||[];l=l||[];r=r||[];
   const B=new Map(b.map(x=>[x.id,js(x)])),L=new Map(l.map(x=>[x.id,x])),R=new Map(r.map(x=>[x.id,x]));

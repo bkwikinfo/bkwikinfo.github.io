@@ -21,10 +21,11 @@ function doPost(e) {
     const req = JSON.parse(e.postData.contents || '{}');
     const user = verify_(req.token);
     const role = role_(user);
-    if (role !== 'admin' && ['whoami', 'portal'].indexOf(req.action) < 0) return json({ ok: false, error: 'Only the admin can do that.' });
+    if (role !== 'admin' && ['whoami', 'portal', 'portalNotify'].indexOf(req.action) < 0) return json({ ok: false, error: 'Only the admin can do that.' });
     switch (req.action) {
       case 'whoami': return json({ ok: true, email: user, role: role });
       case 'portal': return json(portal_(user));
+      case 'portalNotify': return json(portalNotify_(user, req));
       case 'load': return json({ ok: true, companies: Object.keys(COMPANIES).reduce((o, id) => { o[id] = load_(id); return o; }, {}) });
       case 'save': return json(save_(req.id, req.data, req.version));
       case 'versions': return json({ ok: true, versions: Object.keys(COMPANIES).reduce((o, id) => { const x = load_(id); o[id] = x ? x.version : 0; return o; }, {}) });
@@ -79,6 +80,35 @@ function portal_(email) {
     });
   });
   return { ok: true, companies: out };
+}
+
+/* a shareholder tells the admin about a payment or asks for more time */
+function portalNotify_(email, req) {
+  const id = String(req.id || ''); if (!COMPANIES[id]) return { ok: false, error: 'Unknown company' };
+  const kinds = { paid: 'Paid', partial: 'Partly paid', extra: 'Extra paid', extension: 'Needs an extension' };
+  if (!kinds[req.kind]) return { ok: false, error: 'Unknown request' };
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  let p, d, name;
+  try {
+    const cur = load_(id); if (!cur) return { ok: false, error: 'Nothing saved yet' }; d = cur.data;
+    p = (d.shareholders || []).find(q => String(q.email || '').trim().toLowerCase() === email); if (!p) return { ok: false, error: 'Not a shareholder of this company' };
+    const clean = v => String(v == null ? '' : v).slice(0, 500);
+    const r = { id: Utilities.getUuid().slice(0, 12), at: new Date().toISOString(), date: Utilities.formatDate(new Date(), 'Australia/Brisbane', 'yyyy-MM-dd'), personId: p.id, name: p.name, share: Number(p.share),
+      kind: req.kind, amount: Math.max(0, Number(req.amount) || 0), payDate: clean(req.payDate).slice(0, 10), cat: clean(req.cat).slice(0, 20), until: clean(req.until).slice(0, 10), note: clean(req.note), month: clean(req.month).slice(0, 7), status: 'new' };
+    d.requests = d.requests || []; d.requests.push(r); if (d.requests.length > 500) d.requests.splice(0, d.requests.length - 500);
+    write_(id, d, cur.version + 1);
+    name = d.name || COMPANIES[id].name;
+    const lines = [p.name + ' (Share ' + p.share + ') says: ' + kinds[r.kind] + '.', ''];
+    if (r.amount) lines.push('Amount: ' + money_(r.amount));
+    if (r.cat) lines.push('For: ' + r.cat);
+    if (r.payDate) lines.push('Paid on: ' + niceDate_(r.payDate));
+    if (r.until) lines.push('Asking until: ' + niceDate_(r.until));
+    if (r.month) lines.push('Month: ' + r.month);
+    if (r.note) lines.push('Note: ' + r.note);
+    lines.push('', 'Open B KWIK → Shareholders → Monthly payments to record it or reply.', '', 'B KWIK');
+    try { GmailApp.sendEmail(ADMIN_EMAILS[0], kinds[r.kind] + ' · ' + p.name + ' · ' + name, lines.join('\n'), { replyTo: email, name: 'B KWIK' }); } catch (e) { Logger.log(e); }
+  } finally { lock.releaseLock(); }
+  return { ok: true };
 }
 
 /* ---------- storage ---------- */
