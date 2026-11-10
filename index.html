@@ -1804,7 +1804,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.10.5';
+const APP_VERSION='2026.11.10.6';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -2600,16 +2600,16 @@ function renderPortal(){const el=$('#portal'),x=PORTAL[pIdx];
       ${S.rows.map(r=>`<span>${r.cat}</span><span class="n">${m2(r.due)}</span><span class="n">${m2(r.paid)}</span><span class="c">${pPill(pStatus(r.due,r.paid,dIso(r.day)))}</span>`).join('')||'<span class="pempty">No monthly amount set and nothing paid this month.</span>'}</div></section>
     <section class="card"><header class="ch"><h2>Your payments</h2><small class="muted">${pays.length} · ${m2(sum(pays,q=>q.amount))}</small></header>
       <div class="pscroll"><div class="pgrid pg3"><span class="ph sticky">Date</span><span class="ph sticky">For</span><span class="ph n sticky">Amount</span>${pays.map(q=>`<span>${fd(q.date)}</span><span>${catOf(q)==='Other'?esc(q.type||'Other'):catOf(q)}</span><span class="n">${m2(q.amount)}</span>`).join('')||'<span class="pempty">No payments recorded yet.</span>'}</div></div></section>
-    <p class="muted small pfoot">You can only see your own figures. Questions? Email ${esc(x.email||'')}.</p></div>
+    </div>
     <button class="fab pfab" data-pa="menu" aria-label="Statements"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></button>`}
 const P_KINDS={paid:'I paid',partial:'I partly paid',extra:'I paid extra',extension:'I need an extension'};
-function portalMenu(){const it=(per,t,sub)=>`<button type="button" class="setrow" data-act="p-pdf" data-per="${per}"><span class="sr-t"><b>${t}</b><small>${sub}</small></span><span class="chev">›</span></button>`;
+function portalMenu(){const it=(per,t)=>`<button type="button" class="setrow" data-act="p-pdf" data-per="${per}"><span class="sr-t"><b>${t}</b></span><span class="chev">›</span></button>`;
   const pb=(k,t,cls)=>`<button type="button" class="pbtn" data-act="p-tell" data-kind="${k}"><span class="ppill ${cls}"></span><b>${t}</b></button>`;
   openForm({title:PORTAL[pIdx].name,noSave:1,noFocus:1,fields:[{id:'m',type:'html',html:`
-    <p class="setlabel">Payments</p><p class="muted small" style="margin:-4px 0 8px">Let the admin know. Your figures update once they record it.</p>
+    <p class="setlabel">Payments</p>
     <div class="pbtns">${pb('paid','Paid','paid')}${pb('partial','Partly paid','part')}${pb('extra','Extra paid','extra')}${pb('extension','Need extension','late')}</div>
-    <p class="setlabel" style="margin-top:16px">Statements</p><p class="muted small" style="margin:-4px 0 8px">PDF on the company letterhead, with only your own figures.</p>
-    <div class="setlist">${it('month','This month',ymLabel(pMonth))}${it('fy','This financial year','1 July to 30 June')}${it('lastfy','Last financial year','For your tax return')}${it('all','All time','Everything since you started')}</div>`}]})}
+    <p class="setlabel" style="margin-top:16px">Statements</p>
+    <div class="setlist">${it('month','This month')}${it('fy','This financial year')}${it('lastfy','Last financial year')}${it('all','All time')}</div>`}]})}
 function portalTell(kind){const x=PORTAL[pIdx],c=portalC(),S=statement(c,x.person,pMonth);const left=Math.max(0,S.due-S.paid);
   const ext=kind==='extension';
   const fields=ext?[
@@ -2619,8 +2619,8 @@ function portalTell(kind){const x=PORTAL[pIdx],c=portalC(),S=statement(c,x.perso
     {id:'cat',label:'For',type:'select',options:[['','This month (all)'],...SH_CATS.map(k=>[k,k])],value:''},
     {id:'amount',label:'Amount ($)',type:'number',value:kind==='paid'&&left?Math.round(left*100)/100:'',required:1,half:1},
     {id:'payDate',label:'Date paid',type:'date',value:iso(today()),required:1,half:1},
-    {id:'note',label:'Bank reference or note (optional)',placeholder:'e.g. CBA transfer ref 12345'}];
-  openForm({title:P_KINDS[kind],saveLabel:'Send to admin',intro:`${esc(x.name)} · ${ymLabel(pMonth)}${!ext&&left?` · still to pay ${m2(left)}`:''}`,fields,
+    {id:'note',label:'Reference (optional)'}];
+  openForm({title:P_KINDS[kind],saveLabel:'Send to admin',fields,
     onSave:v=>{if(!ext&&!(num(v.amount)>0))return 'Enter the amount you paid.';
       (async()=>{try{const r=await api('portalNotify',{id:x.id,kind,month:pMonth,amount:num(v.amount),payDate:v.payDate||'',cat:v.cat||'',until:v.until||'',note:v.note||''});
         toast(r&&r.ok?'Sent to the admin. Thank you.':'Could not send: '+((r&&r.error)||'try again'))}catch(e){toast('Could not send. Check your internet connection.')}})()}})}
