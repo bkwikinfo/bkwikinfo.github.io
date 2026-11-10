@@ -1078,6 +1078,18 @@ body[data-mode="dark"] .pstand b,body[data-mode="dark"] .pnext b{color:var(--thi
 #plock{position:fixed;inset:0;z-index:9000;display:grid;place-items:center;background:linear-gradient(160deg,var(--navy),#0c141c)}#plock[hidden]{display:none}
 #plock div{display:flex;flex-direction:column;align-items:center;gap:14px;color:#fff}#plock img{width:120px}#plock b{font-size:18px}
 @media (max-width:380px){.ptwo{grid-template-columns:1fr}}
+/* compact month card with dots */
+.pg5{grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr) minmax(0,1fr) minmax(0,1fr) 26px!important}
+.pg5 > span{font-size:13px!important;min-height:30px!important;padding:5px 4px!important}
+.pg5 > .ph{min-height:0!important}
+.pdot{display:inline-block;width:12px;height:12px;border-radius:50%;flex:none;box-shadow:0 0 0 2px color-mix(in srgb,#fff 60%,transparent)}
+.pdot.paid{background:#2e9e63}.pdot.due{background:#e0921b}.pdot.late{background:#d2453b}.pdot.part{background:linear-gradient(90deg,#2e9e63 50%,#e0921b 50%)}.pdot.none{background:color-mix(in srgb,var(--ink) 18%,transparent)}
+.pmh .pdot{margin-left:6px;width:14px;height:14px}
+.pmonth .ptot{margin:8px 0}.pmonth .ptot div{padding:5px 7px}.pmonth .ptot b{font-size:13.5px}
+.pdotkey{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:8px;font-size:11px;color:var(--muted)}.pdotkey span{display:inline-flex;align-items:center;gap:5px}.pdotkey .pdot{width:9px;height:9px;box-shadow:none}
+.ppaid{display:flex;flex-direction:column;align-items:flex-end}.ppaid small{font-size:11.5px;color:var(--muted)}.ppaid b{font-size:17px;color:var(--navy);font-variant-numeric:tabular-nums}
+body[data-mode="dark"] .ppaid b{color:var(--third)}
+.phead{min-height:48px}
 /* three sub-tabs */
 .subtabs:has(> :nth-child(3):last-child){grid-template-columns:repeat(3,1fr)}
 @media (max-width:860px){.subtabs:has(> :nth-child(3):last-child){max-width:none}}
@@ -1851,7 +1863,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.10.7';
+const APP_VERSION='2026.11.10.8';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -2616,8 +2628,7 @@ function openMeetingSend(id){const c=C(),m=c.meetings.find(x=>x.id===id);if(!m)r
 
 /* ---------- shareholder portal (read-only, own figures only) ---------- */
 let PORTAL=null,pIdx=0,pMonth=null,pTab='home',pLang='en';
-try{pLang=localStorage.getItem('pbk-lang')||'en'}catch(e){}
-const TE={'Good morning':'శుభోదయం','Good afternoon':'శుభ మధ్యాహ్నం','Good evening':'శుభ సాయంత్రం','Home':'హోమ్','Project':'ప్రాజెక్ట్','Inbox':'సందేశాలు','Me':'నా వివరాలు',
+const TE={'Ahead':'ముందుగా','Behind':'బకాయి','Good morning':'శుభోదయం','Good afternoon':'శుభ మధ్యాహ్నం','Good evening':'శుభ సాయంత్రం','Home':'హోమ్','Project':'ప్రాజెక్ట్','Inbox':'సందేశాలు','Me':'నా వివరాలు',
  'Share':'షేర్','Due':'చెల్లించాల్సింది','Paid':'చెల్లించినది','To pay':'చెల్లించాలి','Extra':'అదనం','Balance':'బ్యాలెన్స్','Owing before':'పాత బకాయి','Ahead before':'ముందుగా చెల్లించినది',
  'For':'దేనికి','Status':'స్థితి','Amount':'మొత్తం','Date':'తేదీ','Your payments':'మీ చెల్లింపులు','Overdue':'గడువు దాటింది','Part paid':'కొంత చెల్లించారు','No monthly amount set and nothing paid this month.':'ఈ నెల మొత్తం సెట్ చేయలేదు, చెల్లింపు లేదు.',
  'No payments recorded yet.':'ఇంకా చెల్లింపులు లేవు.','Principal':'అసలు','Interest':'వడ్డీ','Outgoings':'ఖర్చులు','Deposit':'డిపాజిట్','Other':'ఇతర',
@@ -2658,6 +2669,9 @@ function pStatus(due,paid,dueIso){const t=iso(today());
   const late=dueIso&&dueIso<t;if(paid>0.005)return {k:'part',l:'Part paid'};
   return late?{k:'late',l:'Overdue'}:{k:'due',l:'Due'}}
 const pPill=x=>`<span class="ppill ${x.k}">${T(x.l)}</span>`;
+const pDot=x=>`<i class="pdot ${x.k}" title="${T(x.l)}" aria-label="${T(x.l)}"></i>`;
+const fdShort=d=>{const x=pd(d);return x?x.toLocaleDateString('en-AU',{day:'numeric',month:'short'}):'—'};
+const m0c=v=>m2(v).replace(/\.00$/,'');
 const pCat=k=>T(k);
 /* overall standing from the first monthly amount to this month */
 function pStanding(c,p){const plans=pPlans(c,p),pays=pPays(c,p);if(!plans.length)return null;const now=ymOf(iso(today()));
@@ -2688,9 +2702,9 @@ function renderPortal(){const el=$('#portal'),x=PORTAL[pIdx];
   const tabs=[['home','Home','<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>'],['project','Project','<path d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6"/>'],['inbox','Inbox','<path d="M4 4h16v12H5l-1 4z"/>'],['me','Me','<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>']];
   const unread=(x.announcements||[]).length;
   el.innerHTML=`<div class="pwrap">
-    <header class="phead"><img src="bkwik-logo.png" alt="" class="plogo"><div><b>${T(greetInfo().t)}, ${esc(p.name.split(' ')[0])}</b><small>${esc(authEmail)}</small></div><button class="pout" data-pa="out" aria-label="${T('Sign out')}" title="${T('Sign out')}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 4h3a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2h-3M10 17l5-5-5-5M15 12H4"/></svg></button></header>
+    <header class="phead"><img src="bkwik-logo.png" alt="" class="plogo"><div><b>${T(greetInfo().t)}, ${esc(p.name.split(' ')[0])}</b></div></header>
     ${PORTAL.length>1?`<div class="subtabs ptabs">${PORTAL.map((q,i)=>`<button type="button" data-pa="co" data-i="${i}" aria-selected="${i===pIdx}">${esc(q.name)}</button>`).join('')}</div>`:''}
-    <section class="card pco">${lg?`<img src="${lg}" alt="" class="pcologo">`:''}<div class="pcon"><b>${esc(x.name)}</b><small>${T('Share')} ${p.share}</small></div>${addr?`<div class="pcoaddr">${esc(addr)}</div>`:''}</section>
+    <section class="card pco">${lg?`<img src="${lg}" alt="" class="pcologo">`:''}<div class="pcon"><b>${esc(x.name)}</b><small>${T('Share')} ${p.share}</small></div><div class="pcoaddr ppaid"><small>${T('Paid so far')}:</small><b>${m2(sum(c.contributions,q=>q.amount))}</b></div></section>
     ${pTab==='home'?pHome(c,x,p):pTab==='project'?pProject(c,x,p):pTab==='inbox'?pInbox(c,x,p):pMe(c,x,p)}
     </div>
     <nav class="pnav">${tabs.map(([k,l,ic])=>`<button type="button" data-pa="tab" data-t="${k}" aria-current="${pTab===k}"><svg viewBox="0 0 24 24" aria-hidden="true">${ic}</svg><span>${T(l)}</span>${k==='inbox'&&unread?`<i class="pbadge">${unread}</i>`:''}</button>`).join('')}</nav>
@@ -2702,13 +2716,13 @@ function pHome(c,x,p){const ym=pMonth,S=statement(c,p,ym),pays=[...c.contributio
   const a2=showA2hs()?`<section class="card pa2hs"><div><b>${T('Add to Home Screen')}</b><small>${/iPhone|iPad/.test(navigator.userAgent)?T('Tap Share, then Add to Home Screen.'):''}</small></div>${window.__bip?`<button class="btn sm gold" data-pa="a2hs" data-v="go">${T('Install')}</button>`:''}<button class="btn sm" data-pa="a2hs" data-v="no">${T('Not now')}</button></section>`:'';
   return `${a2}
     <div class="ptwo">
-    <section class="card pstand">${st?`${ring(st.due?st.paid/st.due*100:100,st.diff<-0.005?'w':'g')}<div><small>${T('Paid so far')}</small><b>${m0(st.paid)}</b><small>${T('of')} ${m0(st.due)}</small><span class="${st.diff<-0.005?'w':'g'}">${st.diff<-0.005?T('Behind')+' '+m2(-st.diff):st.diff>0.005?T('Paid ahead')+' '+m2(st.diff):T('All up to date')}</span></div>`:`<div><small>${T('Paid so far')}</small><b>${m0(sum(pays,q=>q.amount))}</b></div>`}</section>
+    <section class="card pstand">${st?`${ring(st.due?st.paid/st.due*100:100,st.diff<-0.005?'w':'g')}<div><small>${T('Monthly payments')}</small><b>${m0(st.paid)}</b><small>${T('of')} ${m0(st.due)}</small><span class="${st.diff<-0.005?'w':'g'}">${st.diff<-0.005?T('Behind')+' '+m2(-st.diff):st.diff>0.005?T('Paid ahead')+' '+m2(st.diff):T('All up to date')}</span></div>`:`<div><small>${T('Paid so far')}</small><b>${m0(sum(pays,q=>q.amount))}</b></div>`}</section>
     <section class="card pnext ${nx&&nx.days<0?'late':nx&&nx.days<=3?'soon':''}"><small>${T('Next payment')}</small>${nx?`<b>${m2(nx.amount)}</b><span>${fd(nx.date)}</span><em>${nx.days>1?nx.days+' '+T('days left'):nx.days===1?'1 '+T('day left'):nx.days===0?T('Due today'):(-nx.days)+' '+T(-nx.days===1?'day overdue':'days overdue')}</em>`:`<b>—</b><em>${T('Nothing due')}</em>`}</section></div>
-    <section class="card pmonth"><header class="pmh"><button class="icon-btn" data-pa="m" data-k="-1" aria-label="Previous month">‹</button><h2>${ymLabel(ym)}</h2><button class="icon-btn" data-pa="m" data-k="1" aria-label="Next month">›</button>${pPill(tot)}</header>
-      <div class="ptot"><div><small>${T('Due')}</small><b>${m2(S.due)}</b></div><div><small>${T('Paid')}</small><b>${m2(S.paid)}</b></div><div><small>${S.diff<-0.005?T('To pay'):S.diff>0.005?T('Extra'):T('Balance')}</small><b class="${S.diff<-0.005?'w':'g'}">${m2(Math.abs(S.diff))}</b></div>${Math.abs(S.earlier)>0.005?`<div><small>${S.earlier>0?T('Owing before'):T('Ahead before')}</small><b class="${S.earlier>0?'w':'g'}">${m2(Math.abs(S.earlier))}</b></div>`:''}</div>
-      <div class="pgrid pg4"><span class="ph">${T('For')}</span><span class="ph n">${T('Due')}</span><span class="ph n">${T('Paid')}</span><span class="ph c">${T('Status')}</span>
-      ${S.rows.map(r=>`<span>${pCat(r.cat)}</span><span class="n">${m2(r.due)}</span><span class="n">${m2(r.paid)}</span><span class="c">${pPill(pStatus(r.due,r.paid,dIso(r.day)))}</span>`).join('')||`<span class="pempty">${T('No monthly amount set and nothing paid this month.')}</span>`}</div>
-      ${pCal(c,p,ym)}</section>
+    <section class="card pmonth"><header class="pmh"><button class="icon-btn" data-pa="m" data-k="-1" aria-label="Previous month">‹</button><h2>${ymLabel(ym)}</h2><button class="icon-btn" data-pa="m" data-k="1" aria-label="Next month">›</button>${pDot(tot)}</header>
+      <div class="ptot"><div><small>${T('Due')}</small><b>${m2(S.due)}</b></div><div><small>${T('Paid')}</small><b>${m2(S.paid)}</b></div><div><small>${S.diff<-0.005?T('To pay'):S.diff>0.005?T('Extra'):T('Balance')}</small><b class="${S.diff<-0.005?'w':'g'}">${m2(Math.abs(S.diff))}</b></div>${st&&Math.abs(st.diff)>0.005?`<div><small>${st.diff>0?T('Ahead'):T('Behind')}</small><b class="${st.diff>0?'g':'w'}">${m2(Math.abs(st.diff))}</b></div>`:''}</div>
+      <div class="pgrid pg5"><span class="ph">${T('For')}</span><span class="ph">${T('Date')}</span><span class="ph n">${T('Due')}</span><span class="ph n">${T('Paid')}</span><span class="ph c"></span>
+      ${S.rows.map(r=>`<span>${pCat(r.cat)}</span><span>${r.day?fdShort(dIso(r.day)):'—'}</span><span class="n">${m0c(r.due)}</span><span class="n">${m0c(r.paid)}</span><span class="c">${pDot(pStatus(r.due,r.paid,dIso(r.day)))}</span>`).join('')||`<span class="pempty">${T('No monthly amount set and nothing paid this month.')}</span>`}</div>
+      <div class="pdotkey">${[['paid','Paid'],['part','Part paid'],['due','Due'],['late','Overdue']].map(([k,l])=>`<span><i class="pdot ${k}"></i>${T(l)}</span>`).join('')}</div></section>
     <section class="card"><header class="ch"><h2>${T('Your payments')}</h2><small class="muted">${pays.length} · ${m2(sum(pays,q=>q.amount))}</small></header>
       <div class="pscroll"><div class="pgrid pg3"><span class="ph sticky">${T('Date')}</span><span class="ph sticky">${T('For')}</span><span class="ph n sticky">${T('Amount')}</span>${pays.map(q=>`<span>${fd(q.date)}</span><span>${catOf(q)==='Other'?esc(q.type||T('Other')):pCat(catOf(q))}</span><span class="n">${m2(q.amount)}</span>`).join('')||`<span class="pempty">${T('No payments recorded yet.')}</span>`}</div></div></section>
     <section class="card"><header class="ch"><h2>${T('This year')}</h2><small class="muted">FY ${fyOf(iso(today()))-1}-${String(fyOf(iso(today()))).slice(2)}</small></header>${pYear(c,p)}</section>
@@ -2727,9 +2741,6 @@ function pInbox(c,x,p){const an=x.announcements||[],ms=x.inbox||[],mt=x.meetings
   const up=mt.filter(m=>m.date>=t).sort(byDate),past=mt.filter(m=>m.date<t).sort(byDate).reverse();
   const row=(a,id,t1,t2)=>`<button type="button" class="setrow" data-pa="${a}" data-id="${id}"><span class="sr-t"><b>${t1}</b><small>${t2}</small></span><span class="chev">›</span></button>`;
   return `${an.length?`<section class="card"><header class="ch"><h2>${T('Announcements')}</h2></header><div class="setlist">${an.map(a=>row('ann',a.id,esc(a.title),fd(a.date))).join('')}</div></section>`:''}
-    <section class="card"><header class="ch"><h2>${T('Meetings')}</h2></header>${up.map(m=>`<div class="pmeet"><b>${esc(m.title||'Meeting')}</b><small>${fd(m.date)}${m.time?' · '+esc(m.time):''}${m.place?' · '+esc(m.place):''}</small>${m.agenda?`<pre>${esc(m.agenda)}</pre>`:''}
-      <div class="pbtns"><button class="pbtn${m.rsvp==='yes'?' on':''}" data-pa="rsvp" data-id="${m.id}" data-v="yes"><span class="ppill paid"></span><b>${T('Going')}</b></button><button class="pbtn${m.rsvp==='no'?' on':''}" data-pa="rsvp" data-id="${m.id}" data-v="no"><span class="ppill late"></span><b>${T("Can't make it")}</b></button></div></div>`).join('')}
-      ${past.length?`<p class="setlabel" style="margin-top:8px">${T('Past')}</p><div class="setlist">${past.map(m=>row('minutes',m.id,esc(m.title||'Meeting'),fd(m.date)+(m.minutes?' · '+T('Minutes'):''))).join('')}</div>`:''}${!mt.length?`<div class="empty">${T('Nothing yet.')}</div>`:''}</section>
     <section class="card"><header class="ch"><h2>${T('Messages')}</h2></header><div class="setlist pmsgs">${ms.map(m=>row('msg',m.id,esc(m.subject||''),fd(m.date))).join('')||`<div class="empty">${T('Nothing yet.')}</div>`}</div></section>
     <section class="card"><header class="ch"><h2>${T('Documents')}</h2></header><div class="setlist">${dc.map(d=>row('doc',d.id,esc(d.title||d.name||'Document'),fd(d.date))).join('')||`<div class="empty">${T('Nothing yet.')}</div>`}</div></section>`}
 function pMe(c,x,p){const d=x.details||{},pr=d.prefs||{},yes=v=>v?T('On'):T('Off');
@@ -2739,7 +2750,6 @@ function pMe(c,x,p){const d=x.details||{},pr=d.prefs||{},yes=v=>v?T('On'):T('Off
       <button class="btn pwide" data-pa="prefs">${T('Notifications')}</button></section>
     <section class="card"><header class="ch"><h2>${T('Tax pack')}</h2><small class="muted">FY ${fyOf(iso(today()))-2}-${String(fyOf(iso(today()))-1).slice(2)}</small></header><button class="btn gold pwide" data-pa="tax">${T('Download')}</button></section>
     <section class="card pset">
-      <button class="setrow" data-pa="lang"><span class="sr-t"><b>${T('Language')}</b><small>${pLang==='te'?'తెలుగు':'English'}</small></span><span class="chev">${pLang==='te'?'English':'తెలుగు'}</span></button>
       ${window.PublicKeyCredential?`<button class="setrow" data-pa="lock"><span class="sr-t"><b>${T('Face ID / fingerprint lock')}</b><small>${lockId()?T('On'):T('Off')}</small></span><span class="chev">›</span></button>`:''}
       <button class="setrow" data-pa="out"><span class="sr-t"><b>${T('Sign out')}</b></span><span class="chev">›</span></button></section>`}
 /* photos load on demand */
