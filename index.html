@@ -1173,6 +1173,8 @@ body[data-mode="dark"] .phead b{color:var(--third)}
 /* month strip: long notes shrink instead of running into the next item */
 .ms-i{min-width:0;overflow:hidden}.ms-i > span{min-width:0;max-width:100%;align-self:stretch;overflow:hidden}.ms-i em,.ms-i small,.ms-i b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 /* leave room so the + button never covers the last item */
+/* Setup scrolls with the page: a non-scrolling .vscroll with overscroll:contain was swallowing wheel and touch scrolling */
+body[data-sec="setup"] .vscroll{overflow:visible;overscroll-behavior:auto}
 @media (max-width:860px){.vscroll,.subbody,.view .ovscroll,.v-overview{padding-bottom:78px!important}.vscroll::after{content:"";display:block;height:1px}}
 /* row hover visible in light and dark */
 tr.click:hover td,tr.click:focus-visible td{background:color-mix(in srgb,var(--gold) 12%,transparent)!important;color:inherit}
@@ -1925,7 +1927,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.10.15';
+const APP_VERSION='2026.11.10.16';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -2495,7 +2497,7 @@ async function deliver(c,msg){
         toast(res.ok?`Emailed ${res.sent} people from ${res.from}${res.aliasReady?'':' (company address not set up as Send mail as yet)'}`:'Email failed: '+res.error)}
       catch(e){toast('Email failed. Check your internet connection.')}}
   }
-  const other=ch.filter(x=>x!=='email');
+  const other=ch.filter(x=>x!=='email'&&x!=='app');
   if(other.length)setTimeout(()=>openForm({title:'Send by '+other.map(chLabel).join(' and '),noSave:1,noFocus:1,fields:[{id:'l',type:'html',html:`<div class="slist">${msg.recipients.map(r=>{const w=waNum(r.whatsapp||r.mobile),b=[];
     if(other.includes('whatsapp')&&w)b.push(`<a class="btn sm" href="https://wa.me/${w}?text=${encodeURIComponent(r.text)}" target="_blank" rel="noopener">WhatsApp</a>`);
     if(other.includes('sms')&&r.mobile)b.push(`<a class="btn sm" href="sms:${encodeURIComponent(String(r.mobile).replace(/\s/g,''))}?&body=${encodeURIComponent(r.text)}">SMS</a>`);
@@ -3026,6 +3028,7 @@ function openStatement(pid){const c=C(),p=c.shareholders.find(x=>x.id===pid);if(
     <pre class="stmsg">${esc(txt)}</pre>
     <div class="stsend">
       <button type="button" class="btn gold" data-act="st-email" data-id="${p.id}"${p.email?'':' disabled'}>${p.email?'Email '+esc(p.email):'No email saved'}</button>
+      <button type="button" class="btn" data-act="st-app" data-id="${p.id}">Send to shareholder app</button>
       ${w?`<a class="btn" href="https://wa.me/${w}?text=${encodeURIComponent(txt)}" target="_blank" rel="noopener">WhatsApp</a>`:''}
       ${p.mobile?`<a class="btn" href="sms:${encodeURIComponent(String(p.mobile).replace(/\s/g,''))}?&body=${encodeURIComponent(txt)}">SMS</a>`:''}
       <button type="button" class="btn" data-act="st-copy" data-id="${p.id}">Copy</button></div>`}]});
@@ -3172,6 +3175,7 @@ const ST_ACTIONS={'ann-new':()=>{navStack=[];formAnn()},'doc-open':d=>openDocFil
 'sh-pdf':d=>{const pid=shPid;child(()=>openShare(C().shareholders.find(p=>p.id===pid)?.share||1,null,pid),()=>openStatementPdf(d.id))},'sh-msgs':d=>{const pid=shPid;child(()=>openShare(C().shareholders.find(p=>p.id===pid)?.share||1,null,pid),()=>openPersonMsgs(d.id))},'pm-view':d=>{const pid=shPid;child(()=>openPersonMsgs(pid),()=>viewPersonMsg(d.id))},'sh-edit':d=>{const pid=shPid;child(()=>openShare(C().shareholders.find(p=>p.id===pid)?.share||1,null,pid),()=>formPerson(d.id))},
   'set-auto':()=>fromSetup(formAuto),'set-own':()=>fromSetup(openOwnership),'own-add':()=>child(openOwnership,()=>formOwn()),'own-edit':d=>child(openOwnership,()=>formOwn(d.id)),'set-audit':()=>fromSetup(openAudit),'st-month':d=>{stMonth=addYm(stMonth||ymOf(iso(today())),Number(d.k));render()},'st-open':d=>{navStack=[];openStatement(d.id)},'st-send-all':()=>{navStack=[];formSendAll()},
   'st-email':d=>{const c=C(),p=c.shareholders.find(x=>x.id===d.id);if(p){closeModal();navStack=[];stSend(c,[p],['email'])}},
+  'st-app':d=>{const c=C(),p=c.shareholders.find(x=>x.id===d.id);if(p){closeModal();navStack=[];stSend(c,[p],['app']);toast('Sent to '+p.name+' in the shareholder app')}},
   'st-copy':d=>{const c=C(),p=c.shareholders.find(x=>x.id===d.id);const t=stText(c,statement(c,p,stMonth),stMonth);try{navigator.clipboard.writeText(t).then(()=>toast('Copied'),()=>toast('Copy was blocked'))}catch(e){toast('Copy was blocked')}}};
 const ACTIONS={
   ...ST_ACTIONS,
