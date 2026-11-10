@@ -45,7 +45,7 @@ Open https://bkwikinfo.github.io → sign in → iPhone: Share → **Add to Home
 1. Open the Google Sheet → **Extensions → Apps Script**.
 2. Select everything in `Code.gs`, delete it, and paste in the new `apps-script/Code.gs` from this repo.
 3. Click **Save**, then **Deploy → Manage deployments → ✏️ Edit → Version: New version → Deploy**. The web app link stays the same.
-4. Choose `setup` in the function list and click **Run** once (it keeps the 8am daily trigger).
+4. Choose `setup` in the function list and click **Run** once (it keeps the 8am daily trigger). Google will ask you to allow **Drive** access the first time. That is for the Documents and photos folder ("B KWIK documents" in your Drive).
 
 After this:
 - **Setup → Automatic emails** in the app controls the monthly summaries, overdue reminders, loan and bill alerts and the weekly backup.

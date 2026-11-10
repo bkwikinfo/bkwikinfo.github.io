@@ -21,11 +21,16 @@ function doPost(e) {
     const req = JSON.parse(e.postData.contents || '{}');
     const user = verify_(req.token);
     const role = role_(user);
-    if (role !== 'admin' && ['whoami', 'portal', 'portalNotify'].indexOf(req.action) < 0) return json({ ok: false, error: 'Only the admin can do that.' });
+    if (role !== 'admin' && ['whoami', 'portal', 'portalNotify', 'portalRsvp', 'portalPrefs', 'portalDoc'].indexOf(req.action) < 0) return json({ ok: false, error: 'Only the admin can do that.' });
     switch (req.action) {
       case 'whoami': return json({ ok: true, email: user, role: role });
       case 'portal': return json(portal_(user));
       case 'portalNotify': return json(portalNotify_(user, req));
+      case 'portalRsvp': return json(portalEdit_(user, req, 'rsvp'));
+      case 'portalPrefs': return json(portalEdit_(user, req, 'prefs'));
+      case 'portalDoc': return json(portalDoc_(user, req));
+      case 'docUpload': return json(docUpload_(req));
+      case 'docGet': return json(docGet_(req));
       case 'load': return json({ ok: true, companies: Object.keys(COMPANIES).reduce((o, id) => { o[id] = load_(id); return o; }, {}) });
       case 'save': return json(save_(req.id, req.data, req.version));
       case 'versions': return json({ ok: true, versions: Object.keys(COMPANIES).reduce((o, id) => { const x = load_(id); o[id] = x ? x.version : 0; return o; }, {}) });
@@ -76,7 +81,19 @@ function portal_(email) {
         land: d.land ? { address: d.land.address || '' } : {},
         person: { id: p.id, name: p.name, share: Number(p.share), email: p.email, pct: +(25 / members).toFixed(2) },
         plans: (d.plans || []).filter(r => Number(r.shareId) === Number(p.share) && mine(r)).map(r => ({ id: r.id, shareId: Number(r.shareId), personId: p.id, cat: r.cat, amount: r.amount, day: r.day, from: r.from, until: r.until })),
-        contributions: (d.contributions || []).filter(r => shareOf_(d, r) === Number(p.share) && mine(r)).map(r => ({ id: r.id, date: r.date, amount: r.amount, type: r.type, shareId: Number(p.share), personId: p.id, note: String(r.note || '').replace(/^Bank: /, '') })) });
+        contributions: (d.contributions || []).filter(r => shareOf_(d, r) === Number(p.share) && mine(r)).map(r => ({ id: r.id, date: r.date, amount: r.amount, type: r.type, shareId: Number(p.share), personId: p.id, note: String(r.note || '').replace(/^Bank: /, '') })),
+        details: { email: p.email || '', mobile: p.mobile || '', whatsapp: p.whatsapp || '', prefs: p.prefs || {} },
+        pay: d.payDetails || {},
+        loan: d.loan || {}, payments: (d.payments || []).map(r => ({ id: r.id, date: r.date, amount: r.amount, type: r.type, interestManual: r.interestManual })),
+        landFull: d.land || {},
+        stages: (d.stages || []).map(st => ({ id: st.id, name: st.name, status: st.status, budget: st.budget, start: st.start, end: st.end,
+          spent: (d.expenses || []).filter(e => e.stageId === st.id).reduce((a, e) => a + (Number(e.amount) || 0), 0),
+          photos: (d.docs || []).filter(x => x.kind === 'photo' && x.stageId === st.id).map(x => ({ id: x.id, title: x.title, date: x.date })) })),
+        announcements: (d.announcements || []).slice(-50).reverse().map(a => ({ id: a.id, date: a.date, title: a.title, text: a.text, pinned: !!a.pinned })),
+        meetings: (d.meetings || []).map(m => ({ id: m.id, title: m.title, date: m.date, time: m.time, place: m.place, agenda: m.agenda, minutes: m.minutes || '', rsvp: (m.rsvp || {})[p.id] || '', attended: (m.attendees || []).indexOf(p.id) >= 0 })),
+        inbox: (d.messages || []).filter(m => (m.recipients || []).some(r => r.personId === p.id) || (m.audience === 'all' && !(m.recipients || []).length)).slice(-100).reverse()
+          .map(m => { const r = (m.recipients || []).find(q => q.personId === p.id) || {}; return { id: m.id, date: m.date, subject: m.subject, text: r.text || m.body || '' }; }),
+        docs: (d.docs || []).filter(x => x.kind !== 'photo' && (x.personId === p.id || x.personId === 'all' || (x.personId === 'share' + p.share))).map(x => ({ id: x.id, title: x.title, date: x.date, kind: x.kind || 'doc', name: x.name })) });
     });
   });
   return { ok: true, companies: out };
@@ -85,7 +102,7 @@ function portal_(email) {
 /* a shareholder tells the admin about a payment or asks for more time */
 function portalNotify_(email, req) {
   const id = String(req.id || ''); if (!COMPANIES[id]) return { ok: false, error: 'Unknown company' };
-  const kinds = { paid: 'Paid', partial: 'Partly paid', extra: 'Extra paid', extension: 'Needs an extension' };
+  const kinds = { paid: 'Paid', partial: 'Partly paid', extra: 'Extra paid', extension: 'Needs an extension', details: 'Change of details' };
   if (!kinds[req.kind]) return { ok: false, error: 'Unknown request' };
   const lock = LockService.getScriptLock(); lock.waitLock(20000);
   let p, d, name;
@@ -95,6 +112,7 @@ function portalNotify_(email, req) {
     const clean = v => String(v == null ? '' : v).slice(0, 500);
     const r = { id: Utilities.getUuid().slice(0, 12), at: new Date().toISOString(), date: Utilities.formatDate(new Date(), 'Australia/Brisbane', 'yyyy-MM-dd'), personId: p.id, name: p.name, share: Number(p.share),
       kind: req.kind, amount: Math.max(0, Number(req.amount) || 0), payDate: clean(req.payDate).slice(0, 10), cat: clean(req.cat).slice(0, 20), until: clean(req.until).slice(0, 10), note: clean(req.note), month: clean(req.month).slice(0, 7), status: 'new' };
+    if (req.kind === 'details' && req.changes) r.changes = { email: clean(req.changes.email).slice(0, 120), mobile: clean(req.changes.mobile).slice(0, 40), whatsapp: clean(req.changes.whatsapp).slice(0, 40) };
     d.requests = d.requests || []; d.requests.push(r); if (d.requests.length > 500) d.requests.splice(0, d.requests.length - 500);
     write_(id, d, cur.version + 1);
     name = d.name || COMPANIES[id].name;
@@ -109,6 +127,45 @@ function portalNotify_(email, req) {
     try { GmailApp.sendEmail(ADMIN_EMAILS[0], kinds[r.kind] + ' · ' + p.name + ' · ' + name, lines.join('\n'), { replyTo: email, name: 'B KWIK' }); } catch (e) { Logger.log(e); }
   } finally { lock.releaseLock(); }
   return { ok: true };
+}
+
+/* shareholder answers a meeting or saves their notification choices; nothing else can be changed */
+function portalEdit_(email, req, what) {
+  const id = String(req.id || ''); if (!COMPANIES[id]) return { ok: false, error: 'Unknown company' };
+  const lock = LockService.getScriptLock(); lock.waitLock(20000);
+  try {
+    const cur = load_(id); if (!cur) return { ok: false, error: 'Nothing saved yet' }; const d = cur.data;
+    const p = (d.shareholders || []).find(q => String(q.email || '').trim().toLowerCase() === email); if (!p) return { ok: false, error: 'Not a shareholder of this company' };
+    if (what === 'rsvp') {
+      const m = (d.meetings || []).find(x => x.id === req.meetingId); if (!m) return { ok: false, error: 'Meeting not found' };
+      const ans = req.answer === 'yes' ? 'yes' : req.answer === 'no' ? 'no' : ''; m.rsvp = m.rsvp || {}; m.rsvp[p.id] = ans;
+      try { GmailApp.sendEmail(ADMIN_EMAILS[0], p.name + (ans === 'yes' ? ' is coming to ' : ' can\'t make ') + (m.title || 'the meeting') + ' · ' + (d.name || id), p.name + ' (Share ' + p.share + ') answered "' + (ans === 'yes' ? 'Going' : 'Can\'t make it') + '" for ' + (m.title || 'the meeting') + ' on ' + niceDate_(m.date) + '.\n\nB KWIK', { replyTo: email, name: 'B KWIK' }); } catch (e) {}
+    } else {
+      const pr = req.prefs || {}; p.prefs = { email: pr.email !== false, sms: !!pr.sms, whatsapp: !!pr.whatsapp, receipts: pr.receipts !== false };
+    }
+    write_(id, d, cur.version + 1);
+  } finally { lock.releaseLock(); }
+  return { ok: true };
+}
+/* documents and photos live in a Drive folder; a shareholder can only open their own, their share's, or ones for everyone */
+function docFolder_(id) {
+  const name = 'B KWIK documents', it = DriveApp.getFoldersByName(name); const root = it.hasNext() ? it.next() : DriveApp.createFolder(name);
+  const sub = root.getFoldersByName(id); return sub.hasNext() ? sub.next() : root.createFolder(id);
+}
+function docUpload_(req) {
+  const id = String(req.id || ''); if (!COMPANIES[id]) return { ok: false, error: 'Unknown company' };
+  const bytes = Utilities.base64Decode(String(req.base64 || '')); if (bytes.length > 15 * 1024 * 1024) return { ok: false, error: 'File is over 15 MB' };
+  const f = docFolder_(id).createFile(Utilities.newBlob(bytes, req.mime || 'application/octet-stream', req.name || 'file'));
+  return { ok: true, fileId: f.getId(), size: bytes.length };
+}
+function docGet_(req) { const f = DriveApp.getFileById(String(req.fileId)); const b = f.getBlob(); return { ok: true, name: f.getName(), mime: b.getContentType(), base64: Utilities.base64Encode(b.getBytes()) }; }
+function portalDoc_(email, req) {
+  const id = String(req.id || ''); if (!COMPANIES[id]) return { ok: false, error: 'Unknown company' };
+  const x = load_(id); if (!x) return { ok: false, error: 'Not found' }; const d = x.data;
+  const p = (d.shareholders || []).find(q => String(q.email || '').trim().toLowerCase() === email); if (!p) return { ok: false, error: 'Not allowed' };
+  const doc = (d.docs || []).find(q => q.id === req.docId); if (!doc || !doc.fileId) return { ok: false, error: 'Not found' };
+  if (!(doc.kind === 'photo' || doc.personId === p.id || doc.personId === 'all' || doc.personId === 'share' + p.share)) return { ok: false, error: 'Not allowed' };
+  return docGet_({ fileId: doc.fileId });
 }
 
 /* ---------- storage ---------- */
@@ -241,7 +298,7 @@ function logAuto_(d, subject, list, source) {
 function runAuto_(id, d, today) {
   const a = d.auto || {}, day = Number(today.slice(8)), ym = ym_(today), name = d.name || COMPANIES[id].name;
   d.autoLog = d.autoLog || {}; let changed = false; const gotSummary = {};
-  const people = (d.shareholders || []).filter(p => p.email);
+  const people = (d.shareholders || []).filter(p => p.email && !(p.prefs && p.prefs.email === false));
   // 1. monthly summary
   if (Number(a.statementDay) && day === Number(a.statementDay) && !d.autoLog['st-' + ym]) {
     const list = people.map(p => ({ p: p, S: statement_(d, p, ym) })).filter(x => a.statementWho === 'all' || (a.statementWho === 'owing' ? x.S.paid < x.S.due - 0.005 : x.S.due > 0))
