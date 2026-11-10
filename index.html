@@ -1142,6 +1142,11 @@ body[data-mode="dark"] .pmini h3{color:var(--third)}
 /* + menu grouped by type */
 .qasec + .qasec{margin-top:14px;padding-top:12px;border-top:1px solid color-mix(in srgb,var(--ink) 12%,transparent)}
 .qahead{margin:0 0 8px;font-size:11.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--muted)}
+/* temporary help text */
+.infobox{margin:0 0 12px;padding:10px 12px;border-radius:12px;font-size:13px;line-height:1.45;color:var(--ink);
+  background:color-mix(in srgb,var(--gold) 12%,transparent);border:1px dashed color-mix(in srgb,var(--gold) 55%,transparent)}
+.cardinfo{margin:-2px 0 10px;font-size:12px;line-height:1.4;color:var(--muted)}
+body[data-mode="dark"] .infobox{background:color-mix(in srgb,var(--third) 10%,transparent);border-color:color-mix(in srgb,var(--third) 45%,transparent)}
 /* three sub-tabs */
 .subtabs:has(> :nth-child(3):last-child){grid-template-columns:repeat(3,1fr)}
 @media (max-width:860px){.subtabs:has(> :nth-child(3):last-child){max-width:none}}
@@ -1917,7 +1922,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.10.13';
+const APP_VERSION='2026.11.10.14';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -2077,6 +2082,51 @@ function renderClock(){const d=new Date();
   const html=`<span class="ct">${time}</span><span class="cdl"><span class="cdw">${day}</span><span class="cds">${dshort}</span>, ${date}</span>`;
   document.querySelectorAll('[data-clock]').forEach(el=>{if(el.innerHTML!==html)el.innerHTML=html})}
 renderClock();setInterval(renderClock,10000);
+
+/* ---------- temporary help text (set SHOW_INFO=false to remove it everywhere) ---------- */
+const SHOW_INFO=true;
+const PAGE_INFO={
+ 'overview/overview':'Dashboard: a quick look at this company today. Loan balance, money paid in by shareholders, what is due this month and the latest activity.',
+ 'overview/reminders':'Reminders: recurring and one-off reminders (loan repayment, rates, insurance, meetings). Tap one to edit it or send it now. Add new ones with +.',
+ 'overview/calendar':'Calendar: every due date, payment and reminder for this company, month by month. Tap a day to see what is on.',
+ 'holders/shares':'Shares: the four 25% shares and who is in each. Tap a person to see and add their Deposit, Principal, Interest and Outgoings payments and their monthly amounts.',
+ 'holders/monthly':'Monthly payments: what each shareholder owes this month, what they paid and their status. Send each person a private summary, and handle messages that shareholders send from their app.',
+ 'mortgage/principal':'Principal: the loan balance and how each repayment splits into principal and interest. Payoff forecast and Rate change are at the top.',
+ 'mortgage/interest':'Interest: the interest rate history, interest charged on each repayment and totals by financial year (useful for tax).',
+ 'outgoings/utilities':'Utilities: council rates, water, power, insurance and other bills paid by the company, with totals by type.',
+ 'outgoings/works':'Project works: construction stages with budgets, and every project cost (approvals, building, invoices) against them.',
+ 'reports/':'Reports: choose a period and what to include, then download a PDF on the letterhead or share it.',
+ 'setup/':'Setup: company, land and loan details, shareholders and contacts, banks and utility types, what shareholders see in their app, automatic emails and history.'};
+const CARD_INFO={
+ 'Paid in by share':'Total each share has paid in. Shares 3 and 4 are split equally between three people.',
+ 'Payments in':'Every payment received from shareholders, newest first. Tap a row to edit it.',
+ 'From shareholders':'Messages shareholders sent from their app: paid, part paid, extra paid, extension requests and new details.',
+ 'Balance':'How much of the loan is left, and how much has been paid off.',
+ 'Monthly split':'How each month\'s repayments split into principal, interest and fees.',
+ 'Payments':'Every loan repayment, extra payment and fee. Tap a row to edit it.',
+ 'Interest rate history':'Each interest rate change and the date it started.',
+ 'Interest by financial year':'Interest paid each financial year (1 July to 30 June).',
+ 'Interest charged':'Interest worked out for each repayment.',
+ 'By utility':'Total spent on each type of bill.',
+ 'Utility payments':'Every bill paid. Tap a row to edit it.',
+ 'Construction stages':'Each build stage with its budget, spending and status. Shareholders see the progress in their app.',
+ 'Project costs':'Every project cost. Tap a row to edit it.',
+ 'Company':'Company name, ABN, addresses and email (reminders and messages are sent from this email). Land address, size and value.',
+ 'Loan':'Purchase, deposit, loan amount, interest, repayments and rate changes.',
+ 'Shareholders':'Names, shares, email, mobile, WhatsApp and private notes for each person.',
+ 'Banks and utilities':'Lists used in the payment and bill forms.',
+ 'Shareholder portal':'What shareholders see in their own app: how to pay, announcements, and documents and photos.',
+ 'Automation and records':'Automatic emails, bank statement import, ownership changes and the history of every change.',
+ 'Data':'Remove the sample data when you are ready to start.'};
+function addInfo(){if(!SHOW_INFO)return;const v=document.getElementById('view');if(!v||v.querySelector('.infobox'))return;
+  const tab=(v.querySelector('[data-act="subtab"][aria-selected="true"],[data-act="ovtab"][aria-selected="true"]')||{}).dataset?.tab||'';
+  const key=`${sec}/${tab}`,txt=PAGE_INFO[key]||PAGE_INFO[sec+'/'];
+  if(txt){const box=document.createElement('p');box.className='infobox';box.textContent=txt;
+    const anchor=v.querySelector('.subtabs')||v.querySelector('.pagehead');if(anchor)anchor.after(box);else v.prepend(box)}
+  if(sec==='reports')return;
+  v.querySelectorAll('section.card > header.ch h2, .card > header h2').forEach(h=>{const t=CARD_INFO[h.textContent.trim()];if(!t||h.closest('.card').querySelector('.cardinfo'))return;
+    const p=document.createElement('p');p.className='cardinfo';p.textContent=t;h.closest('header').after(p)})}
+
 function render(){
   document.body.dataset.co=cur;document.body.dataset.sec=sec;
   {const src=logoSrc(C()),bl=$('#bglogo');bl.style.backgroundImage=src?`url("${src}${src.startsWith('data:')?'':'?v=3'}")`:'none'}
@@ -2906,6 +2956,7 @@ function formDoc(id){const c=C(),x=c.docs.find(d=>d.id===id);let file=null;
   setTimeout(()=>{const i=document.getElementById('docf');if(i)i.onchange=()=>{file=i.files[0]||null;const n=document.getElementById('docn');if(n)n.textContent=file?file.name:''}},50)}
 async function openDocFile(id){const c=C(),d=c.docs.find(q=>q.id===id);if(!d)return;toast('Opening…');try{const r=await api('docGet',{id:c.id,fileId:d.fileId});if(!r.ok){toast(r.error);return}
   const bin=atob(r.base64),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);saveFile(u,r.name||d.name||'file',r.mime||d.mime)}catch(e){toast('Could not open the file.')}}
+{const _r=render;render=function(){const out=_r.apply(this,arguments);try{addInfo()}catch(e){}return out}}
 /* ---------- monthly statements per person ---------- */
 const ST_LABEL={paid:'Paid',partial:'Partly paid',none:'Not paid',extra:'Extra paid',noplan:'No monthly amount'};
 const ST_CHIP={paid:'ok',partial:'warn',none:'bad',extra:'info',noplan:''};
