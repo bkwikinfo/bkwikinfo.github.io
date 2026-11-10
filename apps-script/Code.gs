@@ -91,7 +91,7 @@ function portal_(email) {
           photos: (d.docs || []).filter(x => x.kind === 'photo' && x.stageId === st.id).map(x => ({ id: x.id, title: x.title, date: x.date })) })),
         announcements: (d.announcements || []).slice(-50).reverse().map(a => ({ id: a.id, date: a.date, title: a.title, text: a.text, pinned: !!a.pinned })),
         meetings: (d.meetings || []).map(m => ({ id: m.id, title: m.title, date: m.date, time: m.time, place: m.place, agenda: m.agenda, minutes: m.minutes || '', rsvp: (m.rsvp || {})[p.id] || '', attended: (m.attendees || []).indexOf(p.id) >= 0 })),
-        inbox: (d.messages || []).filter(m => (m.recipients || []).some(r => r.personId === p.id) || (m.audience === 'all' && !(m.recipients || []).length)).slice(-100).reverse()
+        inbox: (d.messages || []).filter(m => (!m.channels || m.channels.indexOf('app') >= 0 || m.auto || ['statement', 'receipt', 'rate', 'minutes', 'announcement', 'overdue'].indexOf(m.source) >= 0) && ((m.recipients || []).some(r => r.personId === p.id) || (m.audience === 'all' && !(m.recipients || []).length))).slice(-100).reverse()
           .map(m => { const r = (m.recipients || []).find(q => q.personId === p.id) || {}; return { id: m.id, date: m.date, subject: m.subject, text: r.text || m.body || '' }; }),
         docs: (d.docs || []).filter(x => x.kind !== 'photo' && (x.personId === p.id || x.personId === 'all' || (x.personId === 'share' + p.share))).map(x => ({ id: x.id, title: x.title, date: x.date, kind: x.kind || 'doc', name: x.name })) });
     });

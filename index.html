@@ -1280,7 +1280,8 @@ function addMonths(d,n,day){const t=new Date(d.getFullYear(),d.getMonth()+n,1);c
 function addFreq(s,f){const d=pd(s)||today();switch(f){case 'weekly':d.setDate(d.getDate()+7);return iso(d);case 'fortnightly':d.setDate(d.getDate()+14);return iso(d);case 'monthly':return iso(addMonths(d,1));case 'quarterly':return iso(addMonths(d,3));case 'yearly':return iso(addMonths(d,12));default:return ''}}
 const freqLabel=f=>(FREQS.find(x=>x[0]===f)||['','—'])[1];
 const audLabel=a=>a==='pick'?'Chosen people':a==='statements'?'Individual payment summaries':(AUDIENCES.find(x=>x[0]===a)||['','All shareholders'])[1];
-const chLabel=c=>(CHANNELS.find(x=>x[0]===c)||['',c])[1];
+const chLabel=c=>c==='app'?'Shareholder app':(CHANNELS.find(x=>x[0]===c)||['',c])[1];
+const SEND_CH=[['app','Shareholder app'],...CHANNELS];
 
 /* ---------- state ---------- */
 let state={};
@@ -1916,7 +1917,7 @@ let pdfLibP=null;
 function loadScript(src){return new Promise((ok,bad)=>{const t=document.createElement('script');t.src=src;t.onload=ok;t.onerror=()=>bad(new Error('Could not load '+src));document.head.appendChild(t)})}
 function loadPdfLib(){if(!pdfLibP)pdfLibP=loadScript('https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js').then(()=>loadScript('https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js')).catch(e=>{pdfLibP=null;throw e});return pdfLibP}
 function hexOf(v){const c=document.createElement('canvas').getContext('2d');c.fillStyle=v;const h=c.fillStyle;if(h[0]==='#')return [1,3,5].map(i=>parseInt(h.slice(i,i+2),16));const m=h.match(/\d+/g);return m?m.slice(0,3).map(Number):[20,40,70]}
-const APP_VERSION='2026.11.10.12';
+const APP_VERSION='2026.11.10.13';
 const LETTERHEAD={dalby:{first:'letterhead-dalby-1.jpg',next:'letterhead-dalby-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5},kwik:{first:'letterhead-kwik-1.jpg',next:'letterhead-kwik-2.jpg',top1:150,top2:98,bottom:88,pageX:540,pageY:46.5}};
 const PDF_COLORS={dalby:{DARK:[27,46,56],TEAL:[44,105,119],ACC:[95,160,176],SOFT:[236,244,246],ALT:[247,250,251],RULE:[200,214,219]},kwik:{DARK:[21,31,56],TEAL:[52,83,154],ACC:[106,143,212],SOFT:[234,239,249],ALT:[247,249,253],RULE:[201,212,234]}};
 const lhCache={};
@@ -2393,14 +2394,14 @@ const DEFAULT_MSG='Hi {name}, this is a reminder from {company}: {title} of {tot
 function fill(t,c,p,vars){return String(t||'').replace(/\{(\w+)\}/g,(m,k)=>({name:p.name.split(' ')[0],fullname:p.name,company:c.name,share:'Share '+p.share,ownership:fpct(pctOf(c,p)),...vars})[k]??m)}
 function recipientsFor(c,aud,channels,makeText){
   return audiencePeople(c,aud).map(p=>{
-    const missing=channels.filter(ch=>ch==='email'?!p.email:ch==='sms'?!p.mobile:!(p.whatsapp||p.mobile));
+    const missing=channels.filter(ch=>ch==='app'?false:ch==='email'?!p.email:ch==='sms'?!p.mobile:!(p.whatsapp||p.mobile));
     return {personId:p.id,name:p.name,email:p.email,mobile:p.mobile,whatsapp:p.whatsapp||p.mobile,missing,text:makeText(p)};
   });
 }
 function remVars(c,r,p){const total=num(r.amount);return {title:r.title,total:total?m2(total):'the amount',amount:total?m2(total/4):'your share',due:r.nextDate?fd(r.nextDate):'soon'}}
 function previewHtml(c,aud,channels,makeText){
   const rs=recipientsFor(c,aud,channels,makeText);
-  if(!rs.length)return '<div class="empty">No one in this group.</div>';
+  if(!rs.length)return `<div class="empty">${aud==='pick'?'Tick at least one person.':'No one in this group.'}</div>`;
   const miss=rs.filter(r=>r.missing.length);
   return `<p class="small" style="margin-bottom:6px"><b>Preview for ${esc(rs[0].name)}</b> · goes to ${rs.length} ${rs.length===1?'person':'people'}${channels.length?` by ${channels.map(chLabel).join(', ')}`:''}</p><div class="preview">${esc(rs[0].text)}</div>${miss.length?`<p class="small" style="margin-top:8px;color:var(--warn)">Missing contact details: ${miss.map(r=>`${esc(r.name)} (${r.missing.map(chLabel).join(', ')})`).join('; ')}</p>`:''}`;
 }
@@ -2453,7 +2454,7 @@ function formCompose(){
     {id:'subject',label:'Subject',required:1,placeholder:'e.g. Shareholder meeting on Sunday'},
     {id:'audience',label:'Send to',type:'select',options:[['pick','One or more people'],...AUDIENCES],value:'pick'},
     {id:'people',label:'People',type:'checks',options:c.shareholders.map(p=>[p.id,`${p.name} (Share ${p.share})`]),value:[],showIf:v=>v.audience==='pick'},
-    {id:'channels',label:'Send by',type:'checks',options:CHANNELS,value:['email','whatsapp']},
+    {id:'channels',label:'Send by',type:'checks',options:SEND_CH,value:['app','email']},
     {id:'body',label:'Message',type:'textarea',rows:6,required:1,value:'Hi {name},\n\n',hint:'Fill-ins: {name} {company} {share} {ownership}'},
     {id:'pv',type:'html',html:''}
   ];
@@ -2976,14 +2977,14 @@ function openStatement(pid){const c=C(),p=c.shareholders.find(x=>x.id===pid);if(
       <button type="button" class="btn" data-act="st-copy" data-id="${p.id}">Copy</button></div>`}]});
 }
 function stSend(c,people,channels){const ym=stMonth;
-  const recips=people.map(p=>{const S=statement(c,p,ym);const missing=channels.filter(ch=>ch==='email'?!p.email:ch==='sms'?!p.mobile:!(p.whatsapp||p.mobile));
+  const recips=people.map(p=>{const S=statement(c,p,ym);const missing=channels.filter(ch=>ch==='app'?false:ch==='email'?!p.email:ch==='sms'?!p.mobile:!(p.whatsapp||p.mobile));
     return {personId:p.id,name:p.name,email:p.email,mobile:p.mobile,whatsapp:p.whatsapp||p.mobile,missing,text:stText(c,S,ym)}});
   const msg={id:uid(),date:iso(today()),subject:`Your payment summary for ${ymLabel(ym)}`,body:'Individual monthly payment summary',audience:'statements',channels,recipients:recips,source:'statement'};
   c.messages.push(msg);commit();deliver(c,msg)}
 function formSendAll(){const c=C(),ym=stMonth;
   const all=c.shareholders.map(p=>({p,S:statement(c,p,ym)}));
   const fields=[{id:'who',label:'Send to',type:'select',options:[['owing','Only people not fully paid'],['plan','Everyone with a monthly amount'],['all','Every shareholder']],value:'plan'},
-    {id:'channels',label:'Send by',type:'checks',options:CHANNELS,value:['email']},{id:'pv',type:'html',html:''}];
+    {id:'channels',label:'Send by',type:'checks',options:SEND_CH,value:['app','email']},{id:'pv',type:'html',html:''}];
   const pick=v=>all.filter(x=>v.who==='all'||(v.who==='plan'?x.S.due>0:x.S.st==='none'||x.S.st==='partial')).map(x=>x.p);
   openForm({title:`Send ${ymLabel(ym)} summaries`,saveLabel:'Send',fields,intro:'Each person gets a separate message with only their own amounts.',
     onInput:f=>{const {vals}=readForm(f,fields);const ps=pick(vals);$('#f_pv').innerHTML=`<p class="muted small">${ps.length} ${ps.length===1?'person':'people'}: ${esc(ps.map(p=>p.name).join(', ')||'nobody')}${vals.channels.includes('email')&&ps.some(p=>!p.email)?` · no email for ${esc(ps.filter(p=>!p.email).map(p=>p.name).join(', '))}`:''}</p>`},
